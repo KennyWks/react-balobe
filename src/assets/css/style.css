@@ -1,0 +1,28 @@
+.container .title {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.container .sub-title {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.container .container-form {
+    display: flex;
+    justify-items: center
+}
+
+.form-room {
+    display: block;
+    margin: 0 auto;
+}
+
+.form-room .input-custom {
+    height: 40px;
+    margin-right: 10px;
+}
+
+.form-room .btn-cusom{
+    height: 40px;
+}
