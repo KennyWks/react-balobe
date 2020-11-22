@@ -1,14 +1,13 @@
-import React from 'react'
+import React from "react";
 
 const ColoredLine = ({ color, margin }) => (
-    <hr
-        style={{
-            color: color,
-            height: 5,
-            marginTop: margin
-        }}
-    />
-  );
+  <hr
+    style={{
+      color: color,
+      height: 5,
+      marginTop: margin,
+    }}
+  />
+);
 
-export default ColoredLine
-  
+export default ColoredLine;
