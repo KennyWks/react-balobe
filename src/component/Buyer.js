@@ -1,16 +1,12 @@
 import React, { Component } from "react";
 import { Container, Row, Col, Media } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { Cookies } from "react-cookie";
-import jwtDecode from "jwt-decode";
 import {
   MdFavoriteBorder,
   MdRateReview,
   MdReceipt,
   MdLocalOffer,
 } from "react-icons/md";
-
-const cookie = new Cookies();
 
 class Buyer extends Component {
   constructor(props) {
@@ -19,9 +15,6 @@ class Buyer extends Component {
   }
 
   render() {
-    const accessToken = cookie.get("accessToken");
-    const token = jwtDecode(accessToken);
-
     return (
       <div>
         <Container>
@@ -48,7 +41,7 @@ class Buyer extends Component {
                   </div>
                   <div className="mx-3">
                     <Media.Body>
-                      <Link to={""} style={{ textDecoration: "none" }}>
+                      <Link to={"/"} style={{ textDecoration: "none" }}>
                         <h5>Your Favourite Items</h5>
                         <p>Buy your favourite item done collected.</p>
                       </Link>
@@ -77,7 +70,7 @@ class Buyer extends Component {
                   <div className="mx-3">
                     <Media.Body>
                       <Link
-                        to={`/profil/${token.id_user}`}
+                        to={`/profil/${this.props.idUser}`}
                         style={{ textDecoration: "none" }}
                       >
                         <h5>Your Data</h5>

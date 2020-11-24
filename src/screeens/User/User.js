@@ -14,8 +14,9 @@ class User extends Component {
     super(props);
     this.state = {
       isLogin: false,
-      user: {
-        username: "",
+      data: {
+        id_user: "",
+        username: ""
       },
     };
   }
@@ -23,7 +24,8 @@ class User extends Component {
   updateLogin = (status, token) => {
     this.setState({
       isLogin: true,
-      user: {
+      data: {
+        id_user: token.id_user,
         username: token.username,
       },
     });
@@ -54,7 +56,6 @@ class User extends Component {
     return (
       <div>
         <Container>
-          <ColoredLine margin="40px" color="#F8F9FA" />
           <Card className="mb-2">
             <Card.Body>
               <Row>
@@ -70,7 +71,7 @@ class User extends Component {
                 </Col>
               </Row>
               <h4 className="text-center mt-4">
-                Hallo {this.state.user.username}!
+                Hallo {this.state.data.username}!
               </h4>
             </Card.Body>
           </Card>
@@ -83,9 +84,8 @@ class User extends Component {
                 id="noanim-tab-example"
               >
                 <Tabs eventKey="Buyer" title="Buyer">
-                  <Buyer />
+                  <Buyer username={this.state.data.username} idUser={this.state.data.id_user}/>
                 </Tabs>
-
                 <Tabs eventKey="Seler" title="Seler">
                   <Seler />
                 </Tabs>

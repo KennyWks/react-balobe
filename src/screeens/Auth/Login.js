@@ -114,7 +114,7 @@ class Login extends Component {
 
               {this.state.onSubmit && (
                 <div className="text-center my-5">
-                  <Spinner animation="border" variant="primary" />
+                  <Spinner animation="border" variant="primary" size="sm" />
                 </div>
               )}
 

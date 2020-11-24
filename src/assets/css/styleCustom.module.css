@@ -1,25 +1,7 @@
-.data {
-    color: green;
-}
-
-.data1{
-    color:red;
-}
-
 .productBody {
-    font-size: 16px;
-    text-decoration: none;
-    font-family: "Hind Madurai", sans-serif;;
-    text-transform: capitalize;
-    color: black;
+  font-size: 16px;
+  text-decoration: none;
+  font-family: "Hind Madurai", sans-serif;
+  text-transform: capitalize;
+  color: black;
 }
-
-@media only screen and (max-width: 800px) {
-    .signedText {
-      font-size: 15px;
-    }
-  }
-
-  .signedText{
-    text-decoration: none;
-  }

@@ -1,9 +1,11 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import jwtDecode from "jwt-decode";
-import { Nav, Form, FormControl, Button, Navbar } from "react-bootstrap";
+import { Nav, Navbar, NavDropdown } from "react-bootstrap";
 import { Cookies } from "react-cookie";
-import { AiOutlineShoppingCart } from "react-icons/ai";
+import { AiOutlineShoppingCart, AiOutlineSearch } from "react-icons/ai";
+import jwtDecode from "jwt-decode";
+import NavTop from "../../component/NavTop";
+import "../../assets/css/styleNav.css";
 
 const cookie = new Cookies();
 
@@ -19,34 +21,26 @@ const CheckLogin = () => {
     }
     return (
       <div>
-        <Navbar>
-          <Navbar.Toggle />
-          <Navbar.Collapse className="justify-content-end">
-            <Navbar.Text>
-              Hallo!{" "}
-              <Link to={url} style={{ textDecoration: "none" }}>
-                {token.username}
-              </Link>
-            </Navbar.Text>
-            <Navbar.Text className="mx-2">
-              <Link to={`/user`} style={{ textDecoration: "none" }}>
-                <AiOutlineShoppingCart />
-                <sup>2</sup>
-              </Link>
-            </Navbar.Text>
-          </Navbar.Collapse>
-        </Navbar>
+        <Nav>
+          <Link to={url} className="nav-link">
+            Hai {token.username}
+          </Link>
+          <Link to={`/user`}>
+            <AiOutlineShoppingCart />
+            <sup>2</sup>
+          </Link>
+        </Nav>
       </div>
     );
   } else {
     return (
       <div>
-        <Nav className="navbar-nav">
+        <Nav>
           <Link className="nav-link" to={`/signup`}>
-            Sign Up
+            Sigup
           </Link>
-          <Link className="nav-link" to={`/login`}>
-            Sign In
+          <Link className="nav-link" to={`/signin`}>
+            Signin
           </Link>
         </Nav>
       </div>
@@ -57,7 +51,7 @@ const CheckLogin = () => {
 const Header = () => {
   let path = useLocation().pathname;
   if (
-    path === "/login" ||
+    path === "/signin" ||
     path === "/loginWarn" ||
     path === "/signup" ||
     path === "/forgotPass" ||
@@ -66,44 +60,63 @@ const Header = () => {
     return null;
 
   return (
-    <div>
-      <Nav bg="light" variant="light" fixed="top">
-        <Nav.Item>
-          <Nav.Link className="text-muted" href="#apps">
-            Download apps
-          </Nav.Link>
-        </Nav.Item>
-        <Nav.Item>
-          <Nav.Link className="text-muted" href="#help">
-            Help
-          </Nav.Link>
-        </Nav.Item>
-      </Nav>
-
-      <Navbar bg="light" variant="light" fixed="top">
-        <Nav className="mr-auto">
-          <Navbar.Brand href="#home" className="text-primary">
-            Balobe
-          </Navbar.Brand>
-          <Nav.Link href={`/`}>Home</Nav.Link>
-          <Nav.Link href="#features">Features</Nav.Link>
-          <Nav.Link href="#pricing">Pricing</Nav.Link>
-          <Form method="get" action={`/`} inline>
-            <FormControl
-              type="text"
-              placeholder="Search"
-              name="q"
-              className="mr-sm-2"
-            />
-            <Button type="submit" variant="outline-primary">
-              Search
-            </Button>
-          </Form>
-        </Nav>
-        <CheckLogin />
+    <div className="mb-2">
+      <NavTop />
+      <Navbar
+        collapseOnSelect
+        expand="lg"
+        style={{
+          backgroundColor: "#FFF",
+          border: "1px",
+          borderStyle: "solid",
+          borderColor: "#CACDD7",
+        }}
+      >
+        <Navbar.Brand href={"/"}>Balobe</Navbar.Brand>
+        <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+        <Navbar.Collapse id="responsive-navbar-nav">
+          <Nav className="mr-auto">
+            <NavDropdownMenu className="mx-2" title="Category" />
+            <NavDropdownMenu className="mx-2" title="Product" />
+            <form method="get" className="mx-2 inline" action={`/`}>
+              <div className="input-group mb-0">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Search"
+                  name="q"
+                  aria-label="Search"
+                  aria-describedby="basic-addon2"
+                />
+                <div className="input-group-append">
+                  <button
+                    type="submit"
+                    className="btn btn-outline-primary"
+                    type="button"
+                  >
+                    <AiOutlineSearch />
+                  </button>
+                </div>
+              </div>
+            </form>
+          </Nav>
+          <CheckLogin />
+        </Navbar.Collapse>
       </Navbar>
-      <br />
-      <br />
+    </div>
+  );
+};
+
+const NavDropdownMenu = (props) => {
+  return (
+    <div>
+      <NavDropdown title={props.title} id="collasible-nav-dropdown">
+        <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
+        <NavDropdown.Item href="#action/3.2">Another action</NavDropdown.Item>
+        <NavDropdown.Item href="#action/3.3">Something</NavDropdown.Item>
+        <NavDropdown.Divider />
+        <NavDropdown.Item href="#action/3.4">Separated link</NavDropdown.Item>
+      </NavDropdown>
     </div>
   );
 };

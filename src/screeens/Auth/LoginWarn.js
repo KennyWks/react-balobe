@@ -25,7 +25,7 @@ class LoginWarn extends Component {
                 </Link>
               </div>
               <h5 className="text-center my-4">
-                Please <Link to={"/login"}>login</Link> or{" "}
+                Please <Link to={"/signin"}>login</Link> or{" "}
                 <Link to={"/signup"}>register</Link> some account before access
                 this page
               </h5>

@@ -55,13 +55,13 @@ class Review extends Component {
       <div>
         <Container>
           <Row>
-            <Col md={6}>
-              {this.state.load && (
-                <div className="text-center my-2">
-                  <Spinner animation="border" variant="primary" />
-                </div>
-              )}
+            <Col>
               <Card.Body>
+                {this.state.load && (
+                  <div className="text-center my-2">
+                    <Spinner animation="border" variant="primary" />
+                  </div>
+                )}
                 {dataReview.data.length > 0 &&
                   dataReview.data.map((v) => (
                     <ul className="list-unstyled">

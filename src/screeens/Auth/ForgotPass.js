@@ -129,7 +129,7 @@ class ForgotPass extends Component {
 
               <div className="text-center">
                 <h6 className="my-3">
-                  Back to page <Link to={`/login`}>login</Link> or{" "}
+                  Back to page <Link to={`/signin`}>login</Link> or{" "}
                   <Link to={`/signup`}>register</Link>
                 </h6>
               </div>
