@@ -1,17 +1,9 @@
 import React, { Component } from "react";
 import { postData } from "../../helpers/CRUD";
-import {
-  Container,
-  Row,
-  Col,
-  Image,
-  Form,
-  Button,
-  Spinner,
-  Alert,
-} from "react-bootstrap";
-import logoKail from "../../assets/img/logo-kail.JPG";
+import { Container, Row, Col, Form, Button, Spinner } from "react-bootstrap";
+import ImageLogo from "../../component/ImageLogo";
 import { Link } from "react-router-dom";
+import Alert from "../../component/Alert";
 
 class Signup extends Component {
   constructor(props) {
@@ -31,6 +23,7 @@ class Signup extends Component {
       },
       onSubmit: false,
       message: "",
+      alert: "",
     };
   }
 
@@ -42,11 +35,19 @@ class Signup extends Component {
     }));
     try {
       const response = await postData("/auth/signup", this.state.form);
-      // console.log(response.data.error.msg);
-      this.setState((prevState) => ({
-        ...prevState,
-        message: response.data.error.msg,
-      }));
+      if (response.status === 200) {
+        this.setState((prevState) => ({
+          ...prevState,
+          message: "Your acoount is registerd. please check your for confirm",
+          alert: "primary",
+        }));
+      } else {
+        this.setState((prevState) => ({
+          ...prevState,
+          message: "Your account can't register",
+          alert: "danger",
+        }));
+      }
     } catch (error) {
       console.log(error);
     }
@@ -71,33 +72,21 @@ class Signup extends Component {
   render() {
     const { form } = this.state;
     return (
-      <>
+      <div>
         <Container className="mt-4">
           <Row>
             <Col md={3}></Col>
             <Col md={6}>
               <div className="text-center">
                 <Link to={`/`}>
-                  <Image
-                    src={logoKail}
-                    alt="Balobe"
-                    rounded
-                    style={{
-                      width: "20%",
-                      height: "auto",
-                    }}
-                  />
+                  <ImageLogo height="auto" width="20%" />
                 </Link>
               </div>
 
               <h5 className="text-center my-4">Register new account now</h5>
 
               {this.state.onSubmit === "end" && (
-                <div className="d-inline">
-                  <Alert variant="primary" className="text-center">
-                    {this.state.message}
-                  </Alert>
-                </div>
+                <Alert variant={this.state.alert} info={this.state.message} />
               )}
 
               <Form onSubmit={this.handleSubmit}>
@@ -210,7 +199,7 @@ class Signup extends Component {
                   <Button type="submit" className="btn btn-primary mr-3">
                     Submit
                   </Button>
-                  {this.state.onSubmit && (
+                  {this.state.onSubmit === true && (
                     <Spinner animation="border" variant="primary" />
                   )}
                 </div>
@@ -219,7 +208,7 @@ class Signup extends Component {
             <Col md={3}></Col>
           </Row>
         </Container>
-      </>
+      </div>
     );
   }
 }

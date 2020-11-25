@@ -1,25 +1,17 @@
 import React, { Component } from "react";
-import ColoredLine from "../../component/ColoredLine";
+import { format } from "date-fns";
+import { MdPlace } from "react-icons/md";
 import {
-  Container,
-  Row,
-  Col,
-  Form,
-  Button,
-  Spinner,
-  Card,
-  Media,
-} from "react-bootstrap";
-import { getData, postData } from "../../helpers/CRUD";
-import {
-  BsFillChatSquareDotsFill,
+  BsFillInfoCircleFill,
   BsFillShieldFill,
   BsStarFill,
 } from "react-icons/bs";
-import { AiOutlineShoppingCart, AiFillInfoCircle } from "react-icons/ai";
-import { MdPlace } from "react-icons/md";
-import { format } from "date-fns";
+import { Container, Row, Col, Form, Card, Media } from "react-bootstrap";
+import { getData, postData } from "../../helpers/CRUD";
+import ColoredLine from "../../component/ColoredLine";
 import user from "../../assets/img/user.JPG";
+import Spinner from "../../component/Spinner";
+import Button from "../../component/Button";
 
 class DetailProduct extends Component {
   constructor(props) {
@@ -88,7 +80,6 @@ class DetailProduct extends Component {
 
   handleSubmit = async (e) => {
     e.preventDefault();
-    // console.log(this.state.carts)
     this.setState((prevState) => ({
       ...prevState,
       onSubmit: true,
@@ -192,15 +183,10 @@ class DetailProduct extends Component {
       onCheck,
       resultCourier,
     } = this.state;
-    console.log(this.props)
+    console.log(this.props);
     return (
       <div>
-        {load && (
-          <div className="text-center my-5">
-            <Spinner animation="border" variant="primary" />
-          </div>
-        )}
-
+        {load && <Spinner />}
         {!load && (
           <div>
             {Object.keys(detailProduct).length > 0 && (
@@ -327,14 +313,7 @@ class DetailProduct extends Component {
 
                             <Row>
                               <Col>
-                                {onCheck === "check" && (
-                                  <div className="text-center my-3">
-                                    <Spinner
-                                      animation="border"
-                                      variant="primary"
-                                    />
-                                  </div>
-                                )}
+                                {onCheck === "check" && <Spinner />}
 
                                 {onCheck === "" && (
                                   <div
@@ -385,33 +364,37 @@ class DetailProduct extends Component {
                                   variant="outline-dark"
                                   className="mr-3"
                                   size="lg"
-                                >
-                                  <BsFillChatSquareDotsFill /> Chat
-                                </Button>
+                                  type="submit"
+                                  name="Chat"
+                                />
 
                                 <Button
                                   variant="outline-dark"
                                   className="mr-3"
                                   size="lg"
                                   type="submit"
-                                >
-                                  <AiOutlineShoppingCart /> Add Chart
-                                </Button>
+                                  name="Add to Carts"
+                                />
 
-                                <Button variant="outline-primary" size="lg">
-                                  Buy Now
-                                </Button>
+                                <Button
+                                  variant="outline-primary"
+                                  className="mr-3"
+                                  size="lg"
+                                  type="submit"
+                                  name="Buy Now"
+                                >
+                                  </Button>
                               </div>
                             </Form>
 
                             <div className="mt-4">
                               <h6>
-                                <AiFillInfoCircle /> Pay before 13:00 WIB so
+                                <BsFillInfoCircleFill /> Pay before 13:00 WIB so
                                 that the goods are shipped today
                               </h6>
                               <h6>
-                                <AiFillInfoCircle /> Processing Time 5 Working
-                                Days
+                                <BsFillInfoCircleFill /> Processing Time 5
+                                Working Days
                               </h6>
                             </div>
                           </div>

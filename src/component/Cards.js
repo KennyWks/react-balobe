@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Container, Row, Col, Card } from "react-bootstrap";
+import { Row, Col, Card } from "react-bootstrap";
 import udang from "../assets/img/udang.jpg";
 import cakalang from "../assets/img/cakalang.jpg";
 import cumi from "../assets/img/cumi.jpg";
@@ -13,7 +13,7 @@ class Cards extends Component {
             <Card className="bg-dark text-white ">
               <Card.Img
                 src={cumi}
-                alt="Card image"
+                alt="Card image for squids"
                 style={{ height: "400px" }}
               />
             </Card>
@@ -22,7 +22,7 @@ class Cards extends Component {
             <Card className="bg-dark text-white">
               <Card.Img
                 src={cakalang}
-                alt="Card image"
+                alt="Card image for tuna"
                 style={{ height: "400px" }}
               />
             </Card>
@@ -31,7 +31,7 @@ class Cards extends Component {
             <Card className="bg-dark text-white ">
               <Card.Img
                 src={udang}
-                alt="Card image"
+                alt="Card image for chimps"
                 style={{ height: "400px" }}
               />
             </Card>

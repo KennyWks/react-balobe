@@ -1,10 +1,11 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Nav, Navbar, NavDropdown } from "react-bootstrap";
+import { Nav, Navbar } from "react-bootstrap";
 import { Cookies } from "react-cookie";
 import { AiOutlineShoppingCart, AiOutlineSearch } from "react-icons/ai";
 import jwtDecode from "jwt-decode";
 import NavTop from "../../component/NavTop";
+import NavDropdownMenu from "../../component/Dropdown";
 import "../../assets/css/styleNav.css";
 
 const cookie = new Cookies();
@@ -103,20 +104,6 @@ const Header = () => {
           <CheckLogin />
         </Navbar.Collapse>
       </Navbar>
-    </div>
-  );
-};
-
-const NavDropdownMenu = (props) => {
-  return (
-    <div>
-      <NavDropdown title={props.title} id="collasible-nav-dropdown">
-        <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
-        <NavDropdown.Item href="#action/3.2">Another action</NavDropdown.Item>
-        <NavDropdown.Item href="#action/3.3">Something</NavDropdown.Item>
-        <NavDropdown.Divider />
-        <NavDropdown.Item href="#action/3.4">Separated link</NavDropdown.Item>
-      </NavDropdown>
     </div>
   );
 };

@@ -1,19 +1,11 @@
 import React, { Component } from "react";
 import { postData } from "../../helpers/CRUD";
 import { Cookies } from "react-cookie";
-// import jwtDecode from 'jwt-decode'
-import logoKail from "../../assets/img/logo-kail.JPG";
 import { Link } from "react-router-dom";
-import {
-  Container,
-  Row,
-  Col,
-  Image,
-  Form,
-  Button,
-  Spinner,
-  Alert,
-} from "react-bootstrap";
+import { Container, Row, Col, Form, Button } from "react-bootstrap";
+import Alert from "../../component/Alert";
+import ImageLogo from "../../component/ImageLogo";
+import Spinner from "../../component/Spinner";
 
 const cookie = new Cookies();
 
@@ -84,6 +76,13 @@ class Login extends Component {
     }));
   };
 
+  componentDidMount(props) {
+    const accessToken = cookie.get("accessToken");
+    if (accessToken) {
+      this.props.history.push("/user");
+    }
+  }
+
   render() {
     return (
       <div>
@@ -93,15 +92,7 @@ class Login extends Component {
             <Col md={4}>
               <div className="text-center">
                 <Link to={`/`}>
-                  <Image
-                    src={logoKail}
-                    alt="Balobe"
-                    rounded
-                    style={{
-                      width: "33%",
-                      height: "auto",
-                    }}
-                  />
+                  <ImageLogo height="auto" width="25%" />
                 </Link>
               </div>
 
@@ -112,18 +103,10 @@ class Login extends Component {
                 Do not have account? <Link to={"/signup"}>Register here!</Link>
               </h6>
 
-              {this.state.onSubmit && (
-                <div className="text-center my-5">
-                  <Spinner animation="border" variant="primary" size="sm" />
-                </div>
-              )}
+              {this.state.onSubmit && <Spinner />}
 
               {this.state.alert === "danger" && (
-                <div className="d-inline">
-                  <Alert variant={this.state.alert} className="text-center">
-                    {this.state.message}
-                  </Alert>
-                </div>
+                <Alert variant={this.state.alert} info={this.state.message} />
               )}
 
               <Form onSubmit={this.handleSubmit}>

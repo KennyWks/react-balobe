@@ -1,10 +1,11 @@
 import React, { Component } from "react";
 import { getData } from "../../helpers/CRUD";
 import { Link } from "react-router-dom";
-import { Container, Row, Col, Card, CardDeck, Spinner } from "react-bootstrap";
+import { Row, Col, Card, CardDeck } from "react-bootstrap";
 import { BsStarFill } from "react-icons/bs";
 import bodyProduct from "../../assets/css/styleCustom.module.css";
 import Cards from "../../component/Cards";
+import Spinner from "../../component/Spinner";
 
 class Home extends Component {
   constructor(props) {
@@ -13,7 +14,6 @@ class Home extends Component {
       listProduct: {
         data: [],
         metadata: {},
-        q: {},
         load: true,
       },
     };
@@ -56,11 +56,7 @@ class Home extends Component {
     return (
       <div>
         <Cards />
-        {load && (
-          <div className="text-center my-5">
-            <Spinner animation="border" variant="primary" />
-          </div>
-        )}
+        {load && <Spinner />}
         <Row className="mt-4 mx-2">
           {listProduct.length > 0 &&
             listProduct.map((v, i) => (

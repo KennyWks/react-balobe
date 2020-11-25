@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-import logoKail from "../../assets/img/logo-kail.JPG";
+import ImageLogo from "../../component/ImageLogo";
 import { Link } from "react-router-dom";
-import { Container, Row, Col, Image } from "react-bootstrap";
+import { Container, Row, Col } from "react-bootstrap";
 
 class LoginWarn extends Component {
   render() {
@@ -13,15 +13,7 @@ class LoginWarn extends Component {
             <Col md={8}>
               <div className="text-center">
                 <Link to={`/`}>
-                  <Image
-                    src={logoKail}
-                    alt="Balobe"
-                    rounded
-                    style={{
-                      width: "20%",
-                      height: "auto",
-                    }}
-                  />
+                  <ImageLogo height="auto" width="25%" />
                 </Link>
               </div>
               <h5 className="text-center my-4">

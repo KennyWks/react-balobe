@@ -1,11 +1,10 @@
 import React, { Component } from "react";
-import { Container, Row, Col, Card, Image, Tabs } from "react-bootstrap";
+import { Container, Row, Col, Card, Tabs } from "react-bootstrap";
 import jwtDecode from "jwt-decode";
 import { Cookies } from "react-cookie";
-import ColoredLine from "../../component/ColoredLine";
-import Buyer from "../../component/Buyer";
-import Seler from "../../component/Seler";
-import logoKail from "../../assets/img/logo-kail.JPG";
+import Buyer from "./Users/Buyer";
+import Seler from "./Users/Seler";
+import ImageLogo from "../../component/ImageLogo";
 
 const cookie = new Cookies();
 
@@ -16,7 +15,7 @@ class User extends Component {
       isLogin: false,
       data: {
         id_user: "",
-        username: ""
+        username: "",
       },
     };
   }
@@ -58,18 +57,9 @@ class User extends Component {
         <Container>
           <Card className="mb-2">
             <Card.Body>
-              <Row>
-                <Col className="text-center">
-                  <Image
-                    style={{
-                      width: "90px",
-                      height: "70px",
-                    }}
-                    src={logoKail}
-                    roundedCircle
-                  />
-                </Col>
-              </Row>
+              <div className="text-center">
+                <ImageLogo height="70px" width="70" />
+              </div>
               <h4 className="text-center mt-4">
                 Hallo {this.state.data.username}!
               </h4>
@@ -84,7 +74,10 @@ class User extends Component {
                 id="noanim-tab-example"
               >
                 <Tabs eventKey="Buyer" title="Buyer">
-                  <Buyer username={this.state.data.username} idUser={this.state.data.id_user}/>
+                  <Buyer
+                    username={this.state.data.username}
+                    idUser={this.state.data.id_user}
+                  />
                 </Tabs>
                 <Tabs eventKey="Seler" title="Seler">
                   <Seler />

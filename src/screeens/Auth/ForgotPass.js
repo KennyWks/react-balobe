@@ -1,17 +1,10 @@
 import React, { Component } from "react";
 import { postData } from "../../helpers/CRUD";
 import { Link } from "react-router-dom";
-import {
-  Container,
-  Row,
-  Col,
-  Image,
-  Form,
-  Button,
-  Spinner,
-  Alert,
-} from "react-bootstrap";
-import logoKail from "../../assets/img/logo-kail.JPG";
+import { Container, Row, Col, Form, Button } from "react-bootstrap";
+import Spinner from "../../component/Spinner";
+import Alert from "../../component/Alert";
+import ImageLogo from "../../component/ImageLogo";
 
 class ForgotPass extends Component {
   constructor(props) {
@@ -22,7 +15,7 @@ class ForgotPass extends Component {
       },
       onSubmit: false,
       message: "",
-      alert: "",
+      alert: ""
     };
   }
 
@@ -78,32 +71,16 @@ class ForgotPass extends Component {
             <Col md={6}>
               <div className="text-center">
                 <Link to={`/`}>
-                  <Image
-                    src={logoKail}
-                    alt="Balobe"
-                    rounded
-                    style={{
-                      width: "20%",
-                      height: "auto",
-                    }}
-                  />
+                  <ImageLogo height="auto" width="25%" />
                 </Link>
               </div>
 
               <h5 className="text-center my-4">Reset password</h5>
 
-              {this.state.onSubmit === "proccess" && (
-                <div className="text-center my-3">
-                  <Spinner animation="border" variant="primary" />
-                </div>
-              )}
+              {this.state.onSubmit === "proccess" && <Spinner />}
 
               {this.state.onSubmit === "end" && (
-                <div className="d-inline">
-                  <Alert variant={this.state.alert} className="text-center">
-                    {this.state.message}
-                  </Alert>
-                </div>
+                <Alert variant={this.state.alert} info={this.state.message} />
               )}
 
               <Form onSubmit={this.handleSubmit}>
