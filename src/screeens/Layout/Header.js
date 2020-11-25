@@ -38,7 +38,7 @@ const CheckLogin = () => {
       <div>
         <Nav>
           <Link className="nav-link" to={`/signup`}>
-            Sigup
+            Singup
           </Link>
           <Link className="nav-link" to={`/signin`}>
             Signin
@@ -93,7 +93,7 @@ const Header = () => {
                   <button
                     type="submit"
                     className="btn btn-outline-primary"
-                    type="button"
+                    type="submit"
                   >
                     <AiOutlineSearch />
                   </button>

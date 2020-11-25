@@ -225,7 +225,7 @@ class DetailProduct extends Component {
                                   }}
                                   className="card-title text-primary"
                                 >
-                                  Rp {detailProduct.price}
+                                  IDR {detailProduct.price}
                                 </h5>
                               </Col>
                               <Col md={5}>
