@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
 import Spinner from "../../component/Spinner";
 import Alert from "../../component/Alert";
-import ImageLogo from "../../component/ImageLogo";
+import ImageLogo from "../../component/Image";
 
 class ForgotPass extends Component {
   constructor(props) {
@@ -13,17 +13,21 @@ class ForgotPass extends Component {
       form: {
         email: "",
       },
-      onSubmit: false,
+      onSubmit: undefined,
       message: "",
-      alert: ""
+      alert: "",
     };
+  }
+
+  componentDidMount() {
+    document.title = `Forgot Password - Balobe`;
   }
 
   handleSubmit = async (e) => {
     e.preventDefault();
     this.setState((prevState) => ({
       ...prevState,
-      onSubmit: "proccess",
+      onSubmit: true,
     }));
     try {
       const response = await postData("/auth/forgotPass", this.state.form);
@@ -45,7 +49,7 @@ class ForgotPass extends Component {
     }
     this.setState((prevState) => ({
       ...prevState,
-      onSubmit: "end",
+      onSubmit: false,
     }));
   };
 
@@ -64,57 +68,55 @@ class ForgotPass extends Component {
   render() {
     const { form } = this.state;
     return (
-      <div>
-        <Container className="mt-4">
-          <Row>
-            <Col md={3}></Col>
-            <Col md={6}>
-              <div className="text-center">
-                <Link to={`/`}>
-                  <ImageLogo height="auto" width="25%" />
-                </Link>
+      <Container className="mt-4">
+        <Row>
+          <Col md={3}></Col>
+          <Col md={6}>
+            <div className="text-center">
+              <Link to={`/`}>
+                <ImageLogo height="auto" width="25%" />
+              </Link>
+            </div>
+
+            <h5 className="text-center my-4">Reset password</h5>
+
+            {this.state.onSubmit && <Spinner class="text-center my-3" />}
+
+            {!this.state.onSubmit && (
+              <Alert variant={this.state.alert} info={this.state.message} />
+            )}
+
+            <Form onSubmit={this.handleSubmit}>
+              <Form.Group controlId="exampleForm.ControlInput1">
+                <Form.Control
+                  type="text"
+                  name="email"
+                  placeholder="Your email"
+                  value={form.email}
+                  onChange={this.handleInput}
+                />
+              </Form.Group>
+              <div
+                style={{
+                  width: "auto",
+                }}
+              >
+                <Button type="submit" className="btn btn-primary">
+                  Send
+                </Button>
               </div>
+            </Form>
 
-              <h5 className="text-center my-4">Reset password</h5>
-
-              {this.state.onSubmit === "proccess" && <Spinner />}
-
-              {this.state.onSubmit === "end" && (
-                <Alert variant={this.state.alert} info={this.state.message} />
-              )}
-
-              <Form onSubmit={this.handleSubmit}>
-                <Form.Group controlId="exampleForm.ControlInput1">
-                  <Form.Control
-                    type="text"
-                    name="email"
-                    placeholder="Your email"
-                    value={form.email}
-                    onChange={this.handleInput}
-                  />
-                </Form.Group>
-                <div
-                  style={{
-                    width: "auto",
-                  }}
-                >
-                  <Button type="submit" className="btn btn-primary">
-                    Send
-                  </Button>
-                </div>
-              </Form>
-
-              <div className="text-center">
-                <h6 className="my-3">
-                  Back to page <Link to={`/signin`}>login</Link> or{" "}
-                  <Link to={`/signup`}>register</Link>
-                </h6>
-              </div>
-            </Col>
-            <Col md={3}></Col>
-          </Row>
-        </Container>
-      </div>
+            <div className="text-center">
+              <h6 className="my-3">
+                Back to page <Link to={`/signin`}>Login</Link>/
+                <Link to={`/signup`}>Register</Link>
+              </h6>
+            </div>
+          </Col>
+          <Col md={3}></Col>
+        </Row>
+      </Container>
     );
   }
 }

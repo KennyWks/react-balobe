@@ -11,8 +11,6 @@ const ComponentImage = (props) => {
       style={{
         width: props.width,
         height: props.height,
-        // width: "25%",
-        // height: "auto",
       }}
     />
   );

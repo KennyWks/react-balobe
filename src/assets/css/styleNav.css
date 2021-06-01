@@ -1,12 +1,13 @@
-/* .bodyNavbar {
-  z-index: 9999;
-  position: fixed;
-  top: 0;
-  bottom: 0;
+.basket-notify {
+  position: absolute;
   left: 0;
-  right: 0;
 }
 
-.section-nav{
-    margin-top: 120px;
-} */
+.basket-cont {
+  position: relative;
+}
+
+.navbar-all-style {
+  background-color: #fff;
+  border: 1px solid #cacdd7;
+}

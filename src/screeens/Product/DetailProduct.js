@@ -1,4 +1,13 @@
 import React, { Component } from "react";
+import ReactStars from "react-rating-stars-component";
+import ColoredLine from "../../component/ColoredLine";
+import Spinner from "../../component/Spinner";
+import Button from "../../component/Button";
+import Alert from "../../component/Alert";
+import user from "../../assets/img/user.JPG";
+import Header from "../Layout/Templates";
+import { Footer } from "../Layout/Templates";
+import { connect } from "react-redux";
 import { format } from "date-fns";
 import { MdPlace } from "react-icons/md";
 import {
@@ -8,53 +17,63 @@ import {
 } from "react-icons/bs";
 import { Container, Row, Col, Form, Card, Media } from "react-bootstrap";
 import { getData, postData } from "../../helpers/CRUD";
-import ColoredLine from "../../component/ColoredLine";
-import user from "../../assets/img/user.JPG";
-import Spinner from "../../component/Spinner";
-import Button from "../../component/Button";
 
 class DetailProduct extends Component {
   constructor(props) {
     super(props);
     this.state = {
       detailProduct: {},
-      review: {},
-      load: true,
       carts: {
+        id_user: "",
         id_item: "",
-        name_item: "",
-        total_item: "",
+        id_pelapak: "",
+        total_item: 1,
         price: "",
+        courier: 0,
       },
-      onSubmit: false,
-      onCheck: "",
-      weight: "",
+      onLoad: true,
+      onCheck: false,
+      alert: "",
+      message: "",
       city: {},
-      resultCourier: {},
-      form: {
-        destination: "",
-        courier: "",
+      formSend: {
         origin: "",
+        destination: "",
         weight: "",
+        courier: "",
       },
+      resultCourier: [],
+      review: {},
+      formReview: {
+        id_user: props.isLogin ? props.id_user : "",
+        id_item: parseInt(this.props.match.params.id),
+        rating: "",
+        review: "",
+      },
+      disabled: "false",
     };
+  }
+
+  componentDidMount() {
+    this.getDetailProduct();
+    document.title = `Product - Balobe`;
   }
 
   getDetailProduct = async () => {
     this.setState((prevState) => ({
       ...prevState,
-      load: true,
+      onLoad: true,
     }));
     try {
       const response = await getData(`/item/${this.props.match.params.id}`);
       const cityDesti = await getData(`/api/rajaongkir/city`);
-      if (response) {
+      if (response.status === 200) {
         this.setState((prevState) => ({
           ...prevState,
           detailProduct: response.data.data,
-          weight: response.data.data.weight,
           city: cityDesti.data.data.rajaongkir.results,
         }));
+        await this.setOriginAndWeight();
       }
       const responseReview = await getData(
         `/item/review/item/${this.props.match.params.id}`
@@ -70,91 +89,161 @@ class DetailProduct extends Component {
     }
     this.setState((prevState) => ({
       ...prevState,
-      load: false,
+      onLoad: false,
     }));
   };
 
-  componentDidMount() {
-    this.getDetailProduct();
-  }
-
-  handleSubmit = async (e) => {
-    e.preventDefault();
+  setOriginAndWeight = () => {
     this.setState((prevState) => ({
       ...prevState,
-      onSubmit: true,
+      formSend: {
+        ...prevState.formSend,
+        origin: this.state.detailProduct.id_location,
+        weight: this.state.detailProduct.weight,
+      },
     }));
-    try {
-      const response = await postData(`/carts`, this.state.carts);
-      // console.log(response)
+  };
+
+  star = (rating) => {
+    let star = [];
+    for (let i = 0; i < rating; i++) {
+      star.push(<BsStarFill key={i} />);
+    }
+    return star;
+  };
+
+  handleInputOrder = (e) => {
+    const name = e.target.name;
+    const value = e.target.value;
+    if (value > this.state.detailProduct.quantity || value < 1) {
       this.setState((prevState) => ({
         ...prevState,
+        disabled: "true",
+      }));
+    } else {
+      this.setState((prevState) => ({
         carts: {
-          id_item: "",
-          name_item: "",
-          total_item: "",
-          price: "",
+          ...prevState.carts,
+          [name]: value,
         },
       }));
-    } catch (error) {
-      console.log(error);
     }
-    this.setState((prevState) => ({
-      ...prevState,
-      onSubmit: false,
-    }));
   };
 
-  handleInput = (e) => {
+  handleInputCourier = (e) => {
+    const name = e.target.name;
+    const value = e.target.value;
     this.setState((prevState) => ({
       ...prevState,
       carts: {
         ...prevState.carts,
+        [name]: value,
+      },
+    }));
+  };
+
+  setCartsState = () => {
+    this.setState((prevState) => ({
+      ...prevState,
+      carts: {
+        ...prevState.carts,
+        id_user: this.props.id_user,
         id_item: this.state.detailProduct.id_item,
-        name_item: this.state.detailProduct.name_product,
-        total_item: e.target.value,
+        id_pelapak: this.state.detailProduct.id_pelapak,
         price: this.state.detailProduct.price,
       },
     }));
   };
 
+  handleSubmitCarts = async (e) => {
+    e.preventDefault();
+    const element = document.activeElement;
+    const buyBtn = element.classList.contains("buy-btn");
+    this.setState((prevState) => ({
+      ...prevState,
+      onLoad: true,
+    }));
+    if (this.props.isLogin) {
+      if (this.state.carts.courier !== 0) {
+        await this.setCartsState();
+        try {
+          await postData(`/carts`, this.state.carts);
+          // console.log(response)
+          this.setState((prevState) => ({
+            ...prevState,
+            carts: {
+              ...prevState.carts,
+              total_item: 1,
+              courier: 0,
+            },
+          }));
+          if (buyBtn === true) {
+            this.props.history.push("/carts");
+          } else {
+            alert("Item added to carts!");
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      } else {
+        alert("Please select your courier");
+      }
+    } else {
+      alert("Please login before continue the process");
+    }
+    this.setState((prevState) => ({
+      ...prevState,
+      onLoad: false,
+    }));
+  };
+
   handleDestination = (e) => {
+    const name = e.target.name;
     const value = e.target.value;
     this.setState((prevState) => ({
       ...prevState,
-      form: {
-        ...prevState.form,
-        destination: value,
-        origin: 14,
-        weight: this.state.weight,
+      formSend: {
+        ...prevState.formSend,
+        [name]: value,
       },
     }));
   };
 
   handleCourier = (e) => {
+    this.setState((prevState) => ({
+      ...prevState,
+      resultCourier: [],
+    }));
+
+    const name = e.target.name;
     const value = e.target.value;
     this.setState((prevState) => ({
       ...prevState,
-      form: {
-        ...prevState.form,
-        courier: value,
+      formSend: {
+        ...prevState.formSend,
+        [name]: value,
       },
     }));
-    this.handleCekOngkir();
+
+    setTimeout(() => {
+      this.handleCostCheck();
+    }, 500);
   };
 
-  handleCekOngkir = async () => {
+  handleCostCheck = async () => {
     this.setState((prevState) => ({
       ...prevState,
-      onCheck: "check",
+      onCheck: true,
     }));
     try {
-      const response = await postData(`/api/rajaongkir/cost`, this.state.form);
-      console.log(response);
+      const response = await postData(
+        `/api/rajaongkir/cost`,
+        this.state.formSend
+      );
       if (response) {
         this.setState((prevState) => ({
           ...prevState,
-          resultCourier: response.data.data.rajaongkir,
+          resultCourier: response.data.data.rajaongkir.results,
         }));
       }
     } catch (error) {
@@ -162,32 +251,77 @@ class DetailProduct extends Component {
     }
     this.setState((prevState) => ({
       ...prevState,
-      onCheck: "endCheck",
+      onCheck: false,
     }));
   };
 
-  Star = (rating) => {
-    let star = [];
-    for (let i = 0; i < rating; i++) {
-      star.push(<BsStarFill />);
+  handleInputReview = (e) => {
+    const name = e.target.name;
+    const value = e.target.value;
+    this.setState((prevState) => ({
+      ...prevState,
+      formReview: {
+        ...prevState.formReview,
+        [name]: value,
+      },
+    }));
+  };
+
+  ratingChanged = (newRating) => {
+    this.setState((prevState) => ({
+      ...prevState,
+      formReview: {
+        ...prevState.formReview,
+        rating: newRating,
+      },
+    }));
+  };
+
+  handleSubmitReview = async (e) => {
+    e.preventDefault();
+    this.setState((prevState) => ({
+      ...prevState,
+      onLoad: true,
+      alert: "",
+    }));
+    try {
+      const response = await postData(`/item/review`, this.state.formReview);
+      // console.log(response);
+      if (response.status === 200) {
+        this.setState((prevState) => ({
+          ...prevState,
+          formReview: {
+            ...prevState.formReview,
+            rating: "",
+            review: "",
+          },
+          message: "Your comment is added!",
+          alert: "success",
+        }));
+      } else {
+        this.setState((prevState) => ({
+          ...prevState,
+          message: "Your comment isn't added!",
+          alert: "danger",
+        }));
+      }
+    } catch (error) {
+      console.log(error);
     }
-    return star;
+    this.setState((prevState) => ({
+      ...prevState,
+      onLoad: false,
+    }));
   };
 
   render() {
-    const {
-      detailProduct,
-      review,
-      load,
-      city,
-      onCheck,
-      resultCourier,
-    } = this.state;
-    console.log(this.props);
+    const { detailProduct, review, onLoad, city, onCheck, resultCourier } =
+      this.state;
     return (
       <div>
-        {load && <Spinner />}
-        {!load && (
+        <Header />
+        {onLoad && <Spinner class="text-center my-3" />}
+        {!onLoad && (
           <div>
             {Object.keys(detailProduct).length > 0 && (
               <Container>
@@ -241,12 +375,12 @@ class DetailProduct extends Component {
                               </Col>
                             </Row>
 
-                            <p className="card-text">
+                            <div className="card-text">
                               <small className="text-muted">
                                 <BsFillShieldFill /> Product Guarantee, 100%
                                 money back, if damaged or not original
                               </small>
-                            </p>
+                            </div>
 
                             <ColoredLine margin="20px" color="#F8F9FA" />
 
@@ -273,10 +407,12 @@ class DetailProduct extends Component {
                                       <Form.Control
                                         as="select"
                                         name="destination"
-                                        value={this.state.form.destination}
+                                        value={this.state.formSend.destination}
                                         onChange={this.handleDestination}
                                       >
-                                        <option value="">Select</option>
+                                        <option defaultValue>
+                                          Select destination
+                                        </option>
                                         {city.map((v, i) => (
                                           <option key={i} value={v.city_id}>
                                             {v.city_name}
@@ -295,10 +431,12 @@ class DetailProduct extends Component {
                                       <Form.Control
                                         as="select"
                                         name="courier"
-                                        value={this.state.form.courier}
+                                        value={this.state.formSend.courier}
                                         onChange={this.handleCourier}
                                       >
-                                        <option value="">Select</option>
+                                        <option defaultValue>
+                                          Select courier
+                                        </option>{" "}
                                         <option value="jne">JNE</option>
                                         <option value="tiki">TIKI</option>
                                         <option value="pos">
@@ -313,22 +451,53 @@ class DetailProduct extends Component {
 
                             <Row>
                               <Col>
-                                {onCheck === "check" && <Spinner />}
+                                {onCheck && (
+                                  <Spinner class="text-center my-3" />
+                                )}
 
-                                {onCheck === "" && (
+                                {!onCheck && resultCourier.length < 1 && (
                                   <div
                                     style={{
                                       textAlign: "center",
                                       margin: "10px",
                                     }}
                                   >
-                                    -
+                                    Data courier empty.
                                   </div>
+                                )}
+
+                                {!onCheck && resultCourier.length > 0 && (
+                                  <Form.Group controlId="exampleForm.SelectCustom">
+                                    <Form.Control
+                                      as="select"
+                                      custom
+                                      onChange={this.handleInputCourier}
+                                      name="courier"
+                                    >
+                                      <option defaultValue>
+                                        Select services
+                                      </option>
+                                      {resultCourier[0].costs.map((v, i) => (
+                                        <option
+                                          key={i}
+                                          value={v.cost.map((val) => val.value)}
+                                        >
+                                          {v.service} - {v.description} |
+                                          {v.cost.map(
+                                            (val, index) =>
+                                              ` Rp ${val.value} |
+                                              Estimasi Pengiriman ${val.etd}
+                                              Hari`
+                                          )}
+                                        </option>
+                                      ))}
+                                    </Form.Control>
+                                  </Form.Group>
                                 )}
                               </Col>
                             </Row>
 
-                            <Form onSubmit={this.handleSubmit}>
+                            <Form onSubmit={this.handleSubmitCarts}>
                               <input
                                 type="hidden"
                                 name="id_item"
@@ -336,8 +505,8 @@ class DetailProduct extends Component {
                               />
                               <input
                                 type="hidden"
-                                name="name_item"
-                                value={detailProduct.name_product}
+                                name="id_pelapak"
+                                value={detailProduct.id_pelapak}
                               />
                               <input
                                 type="hidden"
@@ -351,9 +520,10 @@ class DetailProduct extends Component {
                                     <Form.Control
                                       type="number"
                                       name="total_item"
+                                      min="1"
                                       placeholder="Your Total Order"
                                       value={this.state.carts.total_item}
-                                      onChange={this.handleInput}
+                                      onChange={this.handleInputOrder}
                                     />
                                   </Form.Group>
                                 </Col>
@@ -362,28 +532,29 @@ class DetailProduct extends Component {
                               <div className="d-inline">
                                 <Button
                                   variant="outline-dark"
-                                  className="mr-3"
+                                  className="mr-3 chat-btn"
                                   size="lg"
                                   type="submit"
-                                  name="Chat"
+                                  name="chat"
                                 />
 
                                 <Button
                                   variant="outline-dark"
-                                  className="mr-3"
+                                  className="mr-3 add-btn"
                                   size="lg"
                                   type="submit"
+                                  disabled={this.state.disabled}
                                   name="Add to Carts"
                                 />
 
                                 <Button
                                   variant="outline-primary"
-                                  className="mr-3"
+                                  className="mr-3 buy-btn"
                                   size="lg"
                                   type="submit"
+                                  disabled={this.state.disabled}
                                   name="Buy Now"
-                                >
-                                  </Button>
+                                />
                               </div>
                             </Form>
 
@@ -393,8 +564,8 @@ class DetailProduct extends Component {
                                 that the goods are shipped today
                               </h6>
                               <h6>
-                                <BsFillInfoCircleFill /> Processing Time 5
-                                Working Days
+                                <BsFillInfoCircleFill /> Processing time 5
+                                working days
                               </h6>
                             </div>
                           </div>
@@ -482,6 +653,58 @@ class DetailProduct extends Component {
               <p style={{ textAlign: "center" }}>Data is empty</p>
             )}
 
+            {this.props.isLogin && (
+              <Container>
+                <ColoredLine margin="10px" color="#F8F9FA" />
+                <Card>
+                  <Card.Body>
+                    <Row>
+                      <Col>
+                        {!this.state.alert !== "" && (
+                          <Alert
+                            variant={this.state.alert}
+                            info={this.state.message}
+                          />
+                        )}
+                        {!this.state.onSubmit && (
+                          <div>
+                            <h3>Add Some Review</h3>
+                            <Form onSubmit={this.handleSubmitReview}>
+                              <Form.Group controlId="review">
+                                <Form.Control
+                                  as="textarea"
+                                  rows={3}
+                                  name="review"
+                                  onChange={this.handleInputReview}
+                                />
+                              </Form.Group>
+                              <ReactStars
+                                count={5}
+                                onChange={this.ratingChanged}
+                                size={24}
+                                activeColor="#ffd700"
+                              />
+                              <Button
+                                variant="primary"
+                                type="submit"
+                                name="send"
+                                className="send-btn"
+                              />
+                            </Form>
+                          </div>
+                        )}
+                        {this.state.onSubmit && (
+                          <div className="text-center my-2">
+                            <Spinner class="text-center my-3" />
+                          </div>
+                        )}
+                      </Col>
+                    </Row>
+                  </Card.Body>
+                </Card>
+              </Container>
+            )}
+
             <Container>
               <ColoredLine margin="10px" color="#F8F9FA" />
               <Card>
@@ -489,11 +712,16 @@ class DetailProduct extends Component {
                   <Row>
                     <Col>
                       <h3>Review</h3>
+                      {!this.props.isLogin && (
+                        <small>
+                          Please login to say something about this item.
+                        </small>
+                      )}
                     </Col>
                     <Col>
                       {review.length > 0 &&
-                        review.map((v) => (
-                          <div className="mb-2">
+                        review.map((v, i) => (
+                          <div className="mb-2" key={i}>
                             <ul className="list-unstyled">
                               <Media as="li">
                                 <div>
@@ -509,7 +737,7 @@ class DetailProduct extends Component {
                                   <Media.Body>
                                     <h5>{v.username}</h5>
                                     <div style={{ color: "yellow" }}>
-                                      {this.Star(v.rating)}
+                                      {this.star(v.rating)}
                                     </div>
                                     <p className="text-muted">
                                       Writed at{" "}
@@ -532,7 +760,7 @@ class DetailProduct extends Component {
                         ))}
 
                       {!(Object.keys(review).length > 0) && (
-                        <p>Review for this item is empty</p>
+                        <p>Review for this item is empty.</p>
                       )}
                     </Col>
                   </Row>
@@ -541,9 +769,17 @@ class DetailProduct extends Component {
             </Container>
           </div>
         )}
+        <Footer />
       </div>
     );
   }
 }
 
-export default DetailProduct;
+const mapStateToProps = (state) => {
+  return {
+    isLogin: state.isLogin,
+    id_user: state.id_user,
+  };
+};
+
+export default connect(mapStateToProps)(DetailProduct);

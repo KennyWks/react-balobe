@@ -26,3 +26,7 @@
 .form-room .btn-cusom {
   height: 40px;
 }
+
+.clicked {
+  color: yellow;
+}

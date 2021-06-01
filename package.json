@@ -1,5 +1,5 @@
 {
-  "name": "react1",
+  "name": "balobe",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -15,9 +15,12 @@
     "react-cookie": "^4.0.3",
     "react-dom": "^16.14.0",
     "react-icons": "^3.11.0",
+    "react-rating-stars-component": "^2.2.0",
     "react-redux": "^7.2.2",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "3.4.3"
+    "react-scripts": "3.4.3",
+    "redux": "^4.0.5",
+    "redux-persist": "^6.0.0"
   },
   "scripts": {
     "start": "react-scripts start",

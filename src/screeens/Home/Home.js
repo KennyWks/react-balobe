@@ -1,11 +1,13 @@
 import React, { Component } from "react";
 import { getData } from "../../helpers/CRUD";
 import { Link } from "react-router-dom";
-import { Row, Col, Card, CardDeck } from "react-bootstrap";
+import { Row, Col, Card, Pagination } from "react-bootstrap";
 import { BsStarFill } from "react-icons/bs";
+import { Footer } from "../Layout/Templates";
+import Header from "../Layout/Templates";
 import bodyProduct from "../../assets/css/styleCustom.module.css";
-import Cards from "../../component/Cards";
 import Spinner from "../../component/Spinner";
+// import Cards from "../../component/Cards";
 
 class Home extends Component {
   constructor(props) {
@@ -14,121 +16,225 @@ class Home extends Component {
       listProduct: {
         data: [],
         metadata: {},
-        load: true,
       },
+      page: 1,
+      onLoad: true,
     };
   }
 
-  getProduct = async (props) => {
+  componentDidMount() {
+    document.title = `Home - Balobe`;
+    this.getProduct(this.props.location.search);
+  }
+
+  getProduct = async (url) => {
     this.setState((prevState) => ({
       ...prevState,
-      load: true,
+      onLoad: true,
     }));
     try {
-      const response = await getData(`/item${!props ? "" : props}`);
+      const response = await getData(`/item${url ? url : ""}`);
       this.setState((prevState) => ({
         ...prevState,
-        listProduct: response.data.data,
+        listProduct: {
+          ...prevState.listProduct,
+          data: response.data.data,
+          metadata: response.data.metadata.pagination,
+        },
       }));
     } catch (error) {
       console.log(error);
     }
     this.setState((prevState) => ({
       ...prevState,
-      load: false,
+      onLoad: false,
     }));
   };
 
-  componentDidMount() {
-    this.getProduct(this.props.location.search);
-  }
+  handleFirstPage = () => {
+    this.setState((prevState) => ({
+      ...prevState,
+      page: 1,
+    }));
+    this.getProduct(`?page=1&limit=5`);
+  };
+
+  handleLastPage = () => {
+    const { totalPage } = this.state.listProduct.metadata;
+    this.setState((prevState) => ({
+      ...prevState,
+      page: totalPage,
+    }));
+    this.getProduct(`?page=${totalPage}&limit=5`);
+  };
+
+  handlePrev = () => {
+    const counter = this.state.page <= 1 ? 1 : this.state.page - 1;
+    this.setState((prevState) => ({
+      ...prevState,
+      page: counter,
+    }));
+    this.getProduct(`?page=${counter}&limit=5`);
+  };
+
+  handleNext = () => {
+    const { totalPage } = this.state.listProduct.metadata;
+    const counter =
+      this.state.page === totalPage ? totalPage : this.state.page + 1;
+
+    this.setState((prevState) => ({
+      ...prevState,
+      page: counter,
+    }));
+    this.getProduct(`?page=${counter}&limit=5`);
+  };
+
+  handleEllipsis = () => {
+    const { currentPage } = this.state.listProduct.metadata;
+    const counter = Math.floor(currentPage / 5);
+    this.setState((prevState) => ({
+      ...prevState,
+      page: counter,
+    }));
+    this.getProduct(`?page=${counter}&limit=5`);
+  };
 
   star = (rating) => {
     let star = [];
     for (let i = 0; i < rating; i++) {
-      star.push(<BsStarFill />);
+      star.push(<BsStarFill key={i} />);
     }
     return star;
   };
 
+  paginationItem = () => {
+    let pagination = [];
+    for (let i = 1; i <= 5; i++) {
+      pagination.push(<Pagination.Item>{i}</Pagination.Item>);
+    }
+    return pagination;
+  };
+
   render() {
-    const { listProduct, load } = this.state;
+    const { data, metadata } = this.state.listProduct;
+    const { onLoad } = this.state;
     return (
       <div>
-        <Cards />
-        {load && <Spinner />}
+        <Header />
+        {/* <Cards /> */}
+        {onLoad && <Spinner class="text-center my-3" />}
+
         <Row className="mt-4 mx-2">
-          {listProduct.length > 0 &&
-            listProduct.map((v, i) => (
-              <Col md={3}>
-                <CardDeck>
-                  <Card
+          {data.length > 0 &&
+            data.map((v, i) => (
+              <Col md={3} key={i}>
+                <Card
+                  style={{
+                    boxShadow:
+                      "0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
+                  }}
+                  className="my-1"
+                >
+                  <Link
+                    to={`item/${v.id_item}`}
                     style={{
-                      boxShadow:
-                        "0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
+                      textDecoration: "none",
                     }}
-                    className="my-1"
                   >
-                    <Link
-                      to={`item/${v.id_item}`}
-                      style={{
-                        textDecoration: "none",
-                      }}
-                    >
-                      <Card.Img
-                        variant="top"
-                        src={`https://firebasestorage.googleapis.com/v0/b/balobe-d2a28.appspot.com/o/${v.image.replace(
-                          "/",
-                          "%2F"
-                        )}?alt=media`}
-                      />
-                      <Card.Body className={bodyProduct.productBody}>
-                        <div
-                          style={{
-                            fontFamily: "Hind Madurai, sans-serif",
-                            style: "normal",
-                            weight: 400,
-                            size: "14px",
-                            lineHeight: "21px",
-                            color: "#141414",
-                          }}
-                        >
-                          {v.name}
-                        </div>
-                        <Row>
-                          <Col md={6}>
-                            <div
-                              style={{
-                                fontFamily: "Hind Madurai, sans-serif",
-                                style: "normal",
-                                weight: 600,
-                                size: "20px",
-                                lineHeight: "24px",
-                                color: "#141414",
-                              }}
-                            >
-                              Rp {v.price}
-                            </div>
-                          </Col>
-                          <Col className="text-right" md={6}>
-                            <small className="text-bold">
-                              {v.rating === null ? (
-                                "Not Rating"
-                              ) : (
-                                <div style={{ color: "yellow" }}>
-                                  {this.star(v.rating)}
-                                </div>
-                              )}
-                            </small>
-                          </Col>
-                        </Row>
-                      </Card.Body>
-                    </Link>
-                  </Card>
-                </CardDeck>
+                    <Card.Img
+                      variant="top"
+                      src={`https://firebasestorage.googleapis.com/v0/b/balobe-d2a28.appspot.com/o/${v.image.replace(
+                        "/",
+                        "%2F"
+                      )}?alt=media`}
+                    />
+                    <Card.Body className={bodyProduct.productBody}>
+                      <div
+                        style={{
+                          fontFamily: "Hind Madurai, sans-serif",
+                          style: "normal",
+                          weight: 400,
+                          size: "14px",
+                          lineHeight: "21px",
+                          color: "#141414",
+                        }}
+                      >
+                        {v.name}
+                      </div>
+                      <Row>
+                        <Col md={6}>
+                          <div
+                            style={{
+                              fontFamily: "Hind Madurai, sans-serif",
+                              style: "normal",
+                              weight: 600,
+                              size: "20px",
+                              lineHeight: "24px",
+                              color: "#141414",
+                            }}
+                          >
+                            Rp {v.price}
+                          </div>
+                        </Col>
+                        <Col className="text-right" md={6}>
+                          <small className="text-bold">
+                            {v.rating === null ? (
+                              "Not Rating"
+                            ) : (
+                              <div style={{ color: "yellow" }}>
+                                {this.star(v.rating)}
+                              </div>
+                            )}
+                          </small>
+                        </Col>
+                      </Row>
+                    </Card.Body>
+                  </Link>
+                </Card>
               </Col>
             ))}
+
+          {data.length < 0 && <div>Data kosong</div>}
         </Row>
+
+        {Object.keys(metadata).length > 0 && (
+          <Row className="justify-content-center mt-3">
+            <Pagination>
+              {metadata.prevPage && (
+                <>
+                  <Pagination.First onClick={this.handleFirstPage} />
+                  <Pagination.Prev onClick={this.handlePrev} />
+                </>
+              )}
+
+              {metadata.currentPage - 1 >= 5 && (
+                <>
+                  <Pagination.Ellipsis onClick={this.handleEllipsis} />
+                </>
+              )}
+
+              <Pagination.Item active>{metadata.currentPage}</Pagination.Item>
+
+              {metadata.totalPage - metadata.currentPage > 5 && (
+                <>{this.paginationItem}</>
+              )}
+
+              {metadata.totalPage - metadata.currentPage >= 5 && (
+                <>
+                  <Pagination.Ellipsis onClick={this.handleEllipsis} />
+                </>
+              )}
+
+              {metadata.nextPage && (
+                <>
+                  <Pagination.Next onClick={this.handleNext} />
+                  <Pagination.Last onClick={this.handleLastPage} />
+                </>
+              )}
+            </Pagination>
+          </Row>
+        )}
+        <Footer />
       </div>
     );
   }

@@ -1,9 +1,9 @@
 import React from "react";
 import { Spinner } from "react-bootstrap";
 
-const ComponentSpinner = () => {
+const ComponentSpinner = (props) => {
   return (
-    <div className="text-center my-3">
+    <div className={props.class}>
       <Spinner animation="border" variant="primary" />
     </div>
   );
