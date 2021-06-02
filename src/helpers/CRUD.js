@@ -1,8 +1,9 @@
 import axios from "axios";
 import { Cookies } from "react-cookie";
 
-const ApiURL = "https://balobe.herokuapp.com";
 // const ApiURL = "http://localhost:5000";
+const ApiURL = "https://balobe.herokuapp.com";
+
 const cookie = new Cookies();
 
 function getConfig() {
@@ -14,7 +15,7 @@ function getConfig() {
       },
     };
   } else {
-    return {};
+    return { headers: {} };
   }
 }
 

@@ -50,7 +50,7 @@ class DetailProduct extends Component {
         rating: "",
         review: "",
       },
-      disabled: "false",
+      disabled: false,
     };
   }
 
@@ -66,12 +66,12 @@ class DetailProduct extends Component {
     }));
     try {
       const response = await getData(`/item/${this.props.match.params.id}`);
-      const cityDesti = await getData(`/api/rajaongkir/city`);
+      const city = await getData(`/api/rajaongkir/city`);
       if (response.status === 200) {
         this.setState((prevState) => ({
           ...prevState,
           detailProduct: response.data.data,
-          city: cityDesti.data.data.rajaongkir.results,
+          city: city.data.data.rajaongkir.results,
         }));
         await this.setOriginAndWeight();
       }
@@ -99,7 +99,7 @@ class DetailProduct extends Component {
       formSend: {
         ...prevState.formSend,
         origin: this.state.detailProduct.city,
-        weight: this.state.detailProduct.weight,
+        weight: this.state.detailProduct.weight * 1,
       },
     }));
   };
@@ -112,25 +112,65 @@ class DetailProduct extends Component {
     return star;
   };
 
-  handleInputOrder = (e) => {
+  handleInputDestination = (e) => {
     const name = e.target.name;
     const value = e.target.value;
-    if (value > this.state.detailProduct.quantity || value < 1) {
-      this.setState((prevState) => ({
-        ...prevState,
-        disabled: "true",
-      }));
-    } else {
-      this.setState((prevState) => ({
-        carts: {
-          ...prevState.carts,
-          [name]: value,
-        },
-      }));
-    }
+    this.setState((prevState) => ({
+      ...prevState,
+      formSend: {
+        ...prevState.formSend,
+        [name]: value,
+      },
+    }));
   };
 
   handleInputCourier = (e) => {
+    this.setState((prevState) => ({
+      ...prevState,
+      resultCourier: [],
+    }));
+
+    const name = e.target.name;
+    const value = e.target.value;
+    this.setState((prevState) => ({
+      ...prevState,
+      formSend: {
+        ...prevState.formSend,
+        [name]: value,
+      },
+    }));
+
+    setTimeout(() => {
+      this.handleCostCheck();
+    }, 500);
+  };
+
+  handleCostCheck = async () => {
+    this.setState((prevState) => ({
+      ...prevState,
+      onCheck: true,
+    }));
+    try {
+      const response = await postData(
+        `/api/rajaongkir/cost`,
+        this.state.formSend
+      );
+      if (response) {
+        this.setState((prevState) => ({
+          ...prevState,
+          resultCourier: response.data.data.rajaongkir.results,
+        }));
+      }
+    } catch (error) {
+      console.log(error);
+    }
+    this.setState((prevState) => ({
+      ...prevState,
+      onCheck: false,
+    }));
+  };
+
+  handleInputServices = (e) => {
     const name = e.target.name;
     const value = e.target.value;
     this.setState((prevState) => ({
@@ -140,6 +180,33 @@ class DetailProduct extends Component {
         [name]: value,
       },
     }));
+  };
+
+  handleInputOrder = (e) => {
+    const name = e.target.name;
+    const value = e.target.value;
+    if (value > this.state.detailProduct.quantity || value < 1) {
+      this.setState((prevState) => ({
+        ...prevState,
+        disabled: true,
+      }));
+    } else {
+      this.setState((prevState) => ({
+        carts: {
+          ...prevState.carts,
+          [name]: value,
+        },
+      }));
+      this.setState((prevState) => ({
+        formSend: {
+          ...prevState.formSend,
+          weight: value * this.state.formSend.weight,
+        },
+      }));
+      setTimeout(() => {
+        this.handleCostCheck();
+      }, 500);
+    }
   };
 
   setCartsState = () => {
@@ -194,64 +261,6 @@ class DetailProduct extends Component {
     this.setState((prevState) => ({
       ...prevState,
       onLoad: false,
-    }));
-  };
-
-  handleDestination = (e) => {
-    const name = e.target.name;
-    const value = e.target.value;
-    this.setState((prevState) => ({
-      ...prevState,
-      formSend: {
-        ...prevState.formSend,
-        [name]: value,
-      },
-    }));
-  };
-
-  handleCourier = (e) => {
-    this.setState((prevState) => ({
-      ...prevState,
-      resultCourier: [],
-    }));
-
-    const name = e.target.name;
-    const value = e.target.value;
-    this.setState((prevState) => ({
-      ...prevState,
-      formSend: {
-        ...prevState.formSend,
-        [name]: value,
-      },
-    }));
-
-    setTimeout(() => {
-      this.handleCostCheck();
-    }, 500);
-  };
-
-  handleCostCheck = async () => {
-    this.setState((prevState) => ({
-      ...prevState,
-      onCheck: true,
-    }));
-    try {
-      const response = await postData(
-        `/api/rajaongkir/cost`,
-        this.state.formSend
-      );
-      if (response) {
-        this.setState((prevState) => ({
-          ...prevState,
-          resultCourier: response.data.data.rajaongkir.results,
-        }));
-      }
-    } catch (error) {
-      console.log(error);
-    }
-    this.setState((prevState) => ({
-      ...prevState,
-      onCheck: false,
     }));
   };
 
@@ -415,8 +424,8 @@ class DetailProduct extends Component {
                                         as="select"
                                         name="destination"
                                         value={this.state.formSend.destination}
-                                        onChange={this.handleDestination}
-                                        onFocus={this.handleDestination}
+                                        onChange={this.handleInputDestination}
+                                        onFocus={this.handleInputDestination}
                                       >
                                         <option defaultValue>
                                           Select destination
@@ -440,8 +449,8 @@ class DetailProduct extends Component {
                                         as="select"
                                         name="courier"
                                         value={this.state.formSend.courier}
-                                        onChange={this.handleCourier}
-                                        onFocus={this.handleCourier}
+                                        onChange={this.handleInputCourier}
+                                        onFocus={this.handleInputCourier}
                                       >
                                         <option defaultValue>
                                           Select courier
@@ -480,7 +489,7 @@ class DetailProduct extends Component {
                                     <Form.Control
                                       as="select"
                                       custom
-                                      onChange={this.handleInputCourier}
+                                      onChange={this.handleInputServices}
                                       name="courier"
                                     >
                                       <option defaultValue>
@@ -524,7 +533,7 @@ class DetailProduct extends Component {
                               />
 
                               <Row>
-                                <Col md={3}>
+                                <Col md={2}>
                                   <span>Pesan</span>
                                 </Col>
                                 <Col md={2}>
