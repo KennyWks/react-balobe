@@ -18,7 +18,8 @@ class Seler extends Component {
     super(props);
     this.state = {
       load: "",
-      data: "",
+      data: {},
+      city: [],
       lgRegisterShow: false,
       lgUpdateShow: false,
       lgChangeLogoShow: false,
@@ -27,7 +28,8 @@ class Seler extends Component {
         name: "",
         logo: "default.png",
         description: "",
-        location: "",
+        city: "",
+        address: "",
       },
       message: "",
       image: "",
@@ -37,8 +39,29 @@ class Seler extends Component {
 
   componentDidMount() {
     document.title = `My transaction (Sell) - Balobe`;
+    // this.getAllCity();
     this.getDetailPelapak();
   }
+
+  // getAllCity = async () => {
+  //   this.setState((prevState) => ({
+  //     ...prevState,
+  //     load: true,
+  //   }));
+  //   try {
+  //     const cityDesti = await getData(`/api/rajaongkir/city`);
+  //     this.setState((prevState) => ({
+  //       ...prevState,
+  //       city: cityDesti.data.data.rajaongkir.results,
+  //     }));
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  //   this.setState((prevState) => ({
+  //     ...prevState,
+  //     load: false,
+  //   }));
+  // };
 
   getDetailPelapak = async () => {
     this.setState((prevState) => ({
@@ -46,6 +69,11 @@ class Seler extends Component {
       load: true,
     }));
     try {
+      const cityDesti = await getData(`/api/rajaongkir/city`);
+      this.setState((prevState) => ({
+        ...prevState,
+        city: cityDesti.data.data.rajaongkir.results,
+      }));
       const response = await getData(`/pelapak/profile`);
       if (response.status === 200) {
         this.setState((prevState) => ({
@@ -55,7 +83,8 @@ class Seler extends Component {
             name: response.data.data.name,
             logo: response.data.data.logo,
             description: response.data.data.description,
-            location: response.data.data.location,
+            city: response.data.data.city,
+            address: response.data.data.address,
           },
         }));
       }
@@ -108,7 +137,8 @@ class Seler extends Component {
             name: "",
             logo: "",
             description: "",
-            location: "",
+            city: "",
+            address: "",
           },
           message: "Your data is registered",
         }));
@@ -140,7 +170,8 @@ class Seler extends Component {
             name: "",
             logo: "",
             description: "",
-            location: "",
+            city: "",
+            address: "",
           },
           message: "Your data is updated",
         }));
@@ -215,8 +246,15 @@ class Seler extends Component {
     }
   };
 
+  setCityofUser = (city) => {
+    const dataCity = this.state.city.filter(function (v) {
+      return v.city_id === `${city}`;
+    });
+    return dataCity[0].city_name;
+  };
+
   render() {
-    const { data } = this.state;
+    const { data, city } = this.state;
     return (
       <div>
         {this.state.load && <Spinner class="text-center my-3" />}
@@ -255,12 +293,12 @@ class Seler extends Component {
                     <Form.Control
                       type="text"
                       name="name"
-                      placeholder="Your name"
+                      placeholder="Your store name"
                       value={this.state.form.name}
                       onChange={this.handleInput}
                     />
                   </Form.Group>
-                  <Form.Group controlId="exampleForm.ControlTextarea1">
+                  <Form.Group controlId="exampleForm.ControlTextarea2">
                     <Form.Label>Description</Form.Label>
                     <Form.Control
                       as="textarea"
@@ -270,13 +308,27 @@ class Seler extends Component {
                       onChange={this.handleInput}
                     />
                   </Form.Group>
-                  <Form.Group controlId="exampleForm.ControlInput2">
-                    <Form.Label>Location</Form.Label>
+                  <Form.Group controlId="city">
+                    <Form.Label>City</Form.Label>
+                    <Form.Control
+                      as="select"
+                      name="city"
+                      onChange={this.handleInput}
+                    >
+                      <option defaultValue>Select your store city</option>
+                      {city.map((v, i) => (
+                        <option key={i} value={v.city_id}>
+                          {v.city_name}
+                        </option>
+                      ))}
+                    </Form.Control>
+                  </Form.Group>
+                  <Form.Group controlId="exampleForm.ControlInput4">
+                    <Form.Label>Address</Form.Label>
                     <Form.Control
                       type="text"
-                      name="location"
-                      placeholder="Your location"
-                      value={this.state.form.location}
+                      name="address"
+                      placeholder="Your address"
                       onChange={this.handleInput}
                     />
                   </Form.Group>
@@ -312,9 +364,10 @@ class Seler extends Component {
                           <h5 className="card-title">{data.name}</h5>
                           <p className="card-text">
                             <MdPlace />
-                            <small className="text-muted">
-                              {data.location}
-                            </small>
+                            &nbsp;
+                            <span className="text-muted">
+                              {this.setCityofUser(data.city)} | {data.address}
+                            </span>
                           </p>
                           <p className="card-text">{data.description}</p>
                           <Link
@@ -327,7 +380,7 @@ class Seler extends Component {
                             className="d-inline mx-2"
                             onClick={() => this.setModalUpdateShow(true)}
                           >
-                            Edit Acoount
+                            Edit Profil
                           </Button>
                           <Button
                             className="d-inline"
@@ -352,7 +405,7 @@ class Seler extends Component {
             >
               <Modal.Header closeButton>
                 <Modal.Title id="example-modal-sizes-title-lg">
-                  Edit Acoount
+                  Edit Profil
                 </Modal.Title>
               </Modal.Header>
               <Modal.Body>
@@ -378,13 +431,28 @@ class Seler extends Component {
                       onChange={this.handleInput}
                     />
                   </Form.Group>
+                  <Form.Group controlId="city">
+                    <Form.Label>City</Form.Label>
+                    <Form.Control
+                      as="select"
+                      name="city"
+                      value={this.state.form.city}
+                      onChange={this.handleInput}
+                    >
+                      {city.map((v, i) => (
+                        <option key={i} value={v.city_id}>
+                          {v.city_name}
+                        </option>
+                      ))}
+                    </Form.Control>
+                  </Form.Group>
                   <Form.Group controlId="exampleForm.ControlInput2">
-                    <Form.Label>Location</Form.Label>
+                    <Form.Label>Address</Form.Label>
                     <Form.Control
                       type="text"
-                      name="location"
-                      placeholder="location"
-                      value={this.state.form.location}
+                      name="address"
+                      placeholder="Your address"
+                      value={this.state.form.address}
                       onChange={this.handleInput}
                     />
                   </Form.Group>

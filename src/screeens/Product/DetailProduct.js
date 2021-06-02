@@ -98,7 +98,7 @@ class DetailProduct extends Component {
       ...prevState,
       formSend: {
         ...prevState.formSend,
-        origin: this.state.detailProduct.id_location,
+        origin: this.state.detailProduct.city,
         weight: this.state.detailProduct.weight,
       },
     }));
@@ -314,6 +314,13 @@ class DetailProduct extends Component {
     }));
   };
 
+  setCityofUser = (city) => {
+    const dataCity = this.state.city.filter(function (v) {
+      return v.city_id === `${city}`;
+    });
+    return dataCity[0].city_name;
+  };
+
   render() {
     const { detailProduct, review, onLoad, city, onCheck, resultCourier } =
       this.state;
@@ -385,14 +392,14 @@ class DetailProduct extends Component {
                             <ColoredLine margin="20px" color="#F8F9FA" />
 
                             <Row>
-                              <Col md={3}>
+                              <Col md={4}>
                                 <div className="text-muted">
-                                  Pelapak location
+                                  Pelapak location (City)
                                 </div>
                                 <Row>
                                   <Col>
                                     <div className="text-bold">
-                                      {detailProduct.location}
+                                      {this.setCityofUser(detailProduct.city)}
                                     </div>
                                   </Col>
                                 </Row>
@@ -423,7 +430,7 @@ class DetailProduct extends Component {
                                   </Col>
                                 </Row>
                               </Col>
-                              <Col md={4}>
+                              <Col md={3}>
                                 <div className="text-muted">Courier</div>
                                 <Row>
                                   <Col>
@@ -630,7 +637,8 @@ class DetailProduct extends Component {
                               <Media.Body>
                                 <h5>{detailProduct.name_pelapak}</h5>
                                 <div>
-                                  <MdPlace /> {detailProduct.location}
+                                  <MdPlace />{" "}
+                                  {this.setCityofUser(detailProduct.city)}
                                 </div>
                                 <p
                                   className="card-text"

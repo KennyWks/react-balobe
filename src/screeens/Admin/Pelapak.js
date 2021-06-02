@@ -83,7 +83,7 @@ class Pelapak extends Component {
                       <th>ID</th>
                       <th>Name</th>
                       <th>Description</th>
-                      <th>Location</th>
+                      <th>Address</th>
                       <th>Logo</th>
                     </tr>
                   </thead>
@@ -94,7 +94,7 @@ class Pelapak extends Component {
                           <td>{v.id_pelapak}</td>
                           <td>{v.name}</td>
                           <td>{v.description}</td>
-                          <td>{v.location}</td>
+                          <td>{v.address}</td>
                           <td>
                             <img
                               width="auto"
