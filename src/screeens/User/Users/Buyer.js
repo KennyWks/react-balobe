@@ -86,7 +86,7 @@ class Buyer extends Component {
                 <div className="mx-3">
                   <Media.Body>
                     <Link
-                      to={"/transaction"}
+                      to={"/transaction/buy"}
                       style={{ textDecoration: "none" }}
                     >
                       <h5>Your Transaction</h5>

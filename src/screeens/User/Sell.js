@@ -512,7 +512,7 @@ class Sell extends Component {
                         <h5 className="card-title">{v.name}</h5>
                         <div className="card-text">
                           <small className="text-muted">
-                            <div>Rp. {v.price}</div>
+                            <div>IDR {v.price}</div>
                             <div>Stok {v.quantity}</div>
                             <div>Berat {v.weight} Kg</div>
                           </small>

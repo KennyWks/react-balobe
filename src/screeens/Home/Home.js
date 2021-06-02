@@ -173,7 +173,7 @@ class Home extends Component {
                               color: "#141414",
                             }}
                           >
-                            Rp {v.price}
+                            IDR {v.price}
                           </div>
                         </Col>
                         <Col className="text-right" md={6}>

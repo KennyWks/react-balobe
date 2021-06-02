@@ -16,8 +16,10 @@ class Carts extends Component {
         total_price: 0,
       },
       cartsOrder: {
+        id_pelapak: 0,
         list_item: 0,
         total_item: 0,
+        courier: 0,
         total_price: 0,
       },
       cartsChecked: null,
@@ -119,7 +121,6 @@ class Carts extends Component {
         await this.setStateCartsChecked(null, null, responseTransaction.msg);
       }
     } catch (error) {
-      console.log(error);
     }
     this.setState((prevState) => ({
       ...prevState,
@@ -210,13 +211,21 @@ class Carts extends Component {
     this.getDataCarts();
   };
 
-  setCheckOutCarts = (list_item, total_item, total_price) => {
+  setCheckOutCarts = (
+    id_pelapak,
+    list_item,
+    total_item,
+    courier,
+    total_price
+  ) => {
     this.setState((prevState) => ({
       ...prevState,
       cartsOrder: {
         ...prevState.cartsOrder,
+        id_pelapak: id_pelapak,
         list_item: list_item,
         total_item: total_item,
+        courier: courier,
         total_price: total_price,
       },
     }));
@@ -229,14 +238,23 @@ class Carts extends Component {
       onLoad: true,
     }));
 
+    const id_pelapak = e.target.dataset["id_pelapak"];
+
     const list_item = e.target.dataset["list_item"];
     const total_item = e.target.dataset["total_item"];
-    const total_price =
-      parseInt(e.target.dataset["total_price"]) +
-      parseInt(e.target.dataset["courier"]);
+
+    const courier = e.target.dataset["courier"];
+
+    const total_price = e.target.dataset["total_price"];
     const id_carts = e.target.dataset["id_carts"];
 
-    await this.setCheckOutCarts(list_item, total_item, total_price);
+    await this.setCheckOutCarts(
+      id_pelapak,
+      list_item,
+      total_item,
+      courier,
+      total_price
+    );
 
     try {
       const response = await postData(
@@ -316,7 +334,7 @@ class Carts extends Component {
                               <div className="my-2">{v.name_item}</div>
                               <div>
                                 <div className="h5 mb-4">
-                                  Rp {v.price} &nbsp; Stock {v.quantity}
+                                  IDR {v.price} &nbsp; Stock {v.quantity}
                                 </div>
                               </div>
 
@@ -376,24 +394,33 @@ class Carts extends Component {
                                   <Form.Check
                                     type={type}
                                     id={v.id}
+                                    data-id_pelapak={v.id_pelapak}
                                     data-list_item={v.id_item}
                                     data-total_item={v.total_item}
-                                    data-total_price={
-                                      parseInt(v.total_price) +
-                                      parseInt(v.courier)
-                                    }
+                                    data-courier={v.courier}
+                                    data-total_price={v.total_price}
                                     onChange={this.onToggle}
                                   />
                                 </div>
                               ))}
                             </div>
                             <div className="p-3 mb-0" style={{ float: "left" }}>
-                              <div>Subtotal</div>
                               <h5>
-                                {v.total_price} |{" "}
-                                <small>Not include cost of courier</small>
+                                Subtotal{" "}
+                                <b>
+                                  IDR{" "}
+                                  {parseInt(v.total_price) +
+                                    parseInt(v.courier)}{" "}
+                                </b>
+                                (Total price & Courier)
                               </h5>
-                              <div>Cost of courier {v.courier}</div>
+                              <div>
+                              <b>IDR {v.total_price}</b> |{" "}
+                                <small>Cost of price</small>
+                              </div>
+                              <div>
+                              <b>IDR {v.courier}</b> | <small>Cost of courier</small>
+                              </div>
                             </div>
                           </div>
 
@@ -406,6 +433,7 @@ class Carts extends Component {
                             variant="danger"
                             onClick={this.checkOutCarts}
                             data-id_carts={v.id}
+                            data-id_pelapak={v.id_pelapak}
                             data-list_item={v.id_item}
                             data-total_item={v.total_item}
                             data-total_price={v.total_price}

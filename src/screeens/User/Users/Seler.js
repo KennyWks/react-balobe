@@ -39,29 +39,8 @@ class Seler extends Component {
 
   componentDidMount() {
     document.title = `My transaction (Sell) - Balobe`;
-    // this.getAllCity();
     this.getDetailPelapak();
   }
-
-  // getAllCity = async () => {
-  //   this.setState((prevState) => ({
-  //     ...prevState,
-  //     load: true,
-  //   }));
-  //   try {
-  //     const cityDesti = await getData(`/api/rajaongkir/city`);
-  //     this.setState((prevState) => ({
-  //       ...prevState,
-  //       city: cityDesti.data.data.rajaongkir.results,
-  //     }));
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  //   this.setState((prevState) => ({
-  //     ...prevState,
-  //     load: false,
-  //   }));
-  // };
 
   getDetailPelapak = async () => {
     this.setState((prevState) => ({
@@ -383,11 +362,17 @@ class Seler extends Component {
                             Edit Profil
                           </Button>
                           <Button
-                            className="d-inline"
+                            className="d-inline mx-2"
                             onClick={() => this.setModalChangeLogoShow(true)}
                           >
                             Edit Logo
                           </Button>
+                          <Link
+                            className="btn btn-primary d-inline"
+                            to={`/transaction/sell/${data.id_pelapak}`}
+                          >
+                            Transaction
+                          </Link>
                         </div>
                       </div>
                     </div>

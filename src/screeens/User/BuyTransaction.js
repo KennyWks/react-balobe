@@ -3,23 +3,27 @@ import { Container, Row, Col, Card, Media } from "react-bootstrap";
 import Spinner from "../../component/Spinner";
 import { getData } from "../../helpers/CRUD";
 
-const Transaction = () => {
+const BuyTransaction = () => {
   const [data, setData] = useState([]);
   const [onLoad, setLoad] = useState(false);
 
-  useEffect(() => {
-    document.title = `Your Transaction - Balobe`;
-    getTransaction();
-  }, []);
-
   const getTransaction = async () => {
     setLoad(true);
-    const response = await getData(`/transaction/all`);
-    if (response.status === 200) {
-      setData(response.data.data);
+    try {
+      const response = await getData(`/transaction/buy`);
+      if (response.status === 200) {
+        setData(response.data.data);
+      }
+    } catch (error) {
+      console.log(error);
     }
     setLoad(false);
   };
+
+  useEffect(() => {
+    document.title = `Your Transaction (Buy) - Balobe`;
+    getTransaction();
+  }, []);
 
   return (
     <Container>
@@ -50,9 +54,20 @@ const Transaction = () => {
                       />
                       <Media.Body>
                         <h3>{v.name}</h3>
-                        <h5>Total Pemesanan : {v.total_item}</h5>
-                        <div className="text-bold">Rp {v.total_price}</div>
-                        <div className="badge badge-success">Sudah Dibayar</div>
+                        <h5>
+                          Total Payment - IDR{" "}
+                          {parseInt(v.total_price) + parseInt(v.courier)}
+                        </h5>
+                        <div className="text-bold">
+                          Total Order : {v.total_item}
+                        </div>
+                        <div className="text-bold">
+                          Total Price - IDR {v.total_price}
+                        </div>
+                        <div className="text-bold">
+                          Courier - IDR {v.courier}
+                        </div>
+                        <div className="badge badge-success">Payed</div>
                       </Media.Body>
                     </Media>
                   </ul>
@@ -65,4 +80,4 @@ const Transaction = () => {
   );
 };
 
-export default Transaction;
+export default BuyTransaction;

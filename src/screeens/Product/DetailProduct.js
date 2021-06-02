@@ -416,6 +416,7 @@ class DetailProduct extends Component {
                                         name="destination"
                                         value={this.state.formSend.destination}
                                         onChange={this.handleDestination}
+                                        onFocus={this.handleDestination}
                                       >
                                         <option defaultValue>
                                           Select destination
@@ -440,6 +441,7 @@ class DetailProduct extends Component {
                                         name="courier"
                                         value={this.state.formSend.courier}
                                         onChange={this.handleCourier}
+                                        onFocus={this.handleCourier}
                                       >
                                         <option defaultValue>
                                           Select courier
@@ -482,7 +484,7 @@ class DetailProduct extends Component {
                                       name="courier"
                                     >
                                       <option defaultValue>
-                                        Select services
+                                        Select courier services
                                       </option>
                                       {resultCourier[0].costs.map((v, i) => (
                                         <option
@@ -492,7 +494,7 @@ class DetailProduct extends Component {
                                           {v.service} - {v.description} |
                                           {v.cost.map(
                                             (val, index) =>
-                                              ` Rp ${val.value} |
+                                              ` IDR ${val.value} |
                                               Estimasi Pengiriman ${val.etd}
                                               Hari`
                                           )}
@@ -522,7 +524,10 @@ class DetailProduct extends Component {
                               />
 
                               <Row>
-                                <Col md={4}>
+                                <Col md={3}>
+                                  <span>Pesan</span>
+                                </Col>
+                                <Col md={2}>
                                   <Form.Group controlId="total_item">
                                     <Form.Control
                                       type="number"
