@@ -1,11 +1,38 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { postData } from "../../helpers/CRUD";
-import { Container, Row, Col, Form, Button } from "react-bootstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Form as FormBootstrap,
+  Button,
+} from "react-bootstrap";
 import ImageLogo from "../../component/Image";
 import { Link } from "react-router-dom";
 import Alert from "../../component/Alert";
 import Spinner from "../../component/Spinner";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
+
+const signupFormSchema = Yup.object().shape({
+  username: Yup.string()
+    .required("Username is required!")
+    .min(5, "Username must be 5 characters at minimum!"),
+  password: Yup.string()
+    .required("Password is required!")
+    .min(5, "Password must be 5 characters at minimum!"),
+  fullname: Yup.string().required("Fullname is required!"),
+  gender: Yup.string().required("Gender is required!"),
+  address: Yup.string().required("Address is required!"),
+  email: Yup.string()
+    .required("Email is required!")
+    .email("Invalid email address!"),
+  phone: Yup.string()
+    .required("Phone is required!")
+    .min(11, "Phone must be 11 characters at minimum!")
+    .max(12, "Phone must be 12 characters at maximum!"),
+});
 
 class Signup extends Component {
   constructor(props) {
@@ -17,7 +44,7 @@ class Signup extends Component {
         role_id: "3",
         fullname: "",
         gender: "",
-        picture: "default.jpg",
+        picture: "img-users/default.png",
         address: "",
         email: "",
         phone: "",
@@ -33,50 +60,56 @@ class Signup extends Component {
     document.title = `Register Account - Balobe`;
   }
 
-  handleSubmit = async (e) => {
-    e.preventDefault();
+  handleSubmit = async () => {
     this.setState((prevState) => ({
       ...prevState,
       onSubmit: true,
+      message: "",
+      alert: "",
     }));
     try {
       const response = await postData("/auth/signup", this.state.form);
-      if (response.status === 200) {
+      if (response.status === 201) {
         this.setState((prevState) => ({
           ...prevState,
-          message: "Your acoount is registerd. please check your for confirm",
-          alert: "primary",
-        }));
-      } else {
-        this.setState((prevState) => ({
-          ...prevState,
-          message: "Your account can't register",
-          alert: "danger",
+          message: response.data.data.msg,
+          alert: "success",
         }));
       }
     } catch (error) {
-      console.log(error);
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        } else {
+          this.setState((prevState) => ({
+            ...prevState,
+            message: error.response.data.error.msg,
+            alert: "danger",
+          }));
+        }
+      }
     }
     this.setState((prevState) => ({
       ...prevState,
-      onSubmit: "end",
+      onSubmit: false,
     }));
   };
 
-  handleInput = async (e) => {
-    const name = e.target.name;
-    const value = e.target.value;
-    this.setState((prevState) => ({
-      ...prevState,
-      form: {
-        ...prevState.form,
-        [name]: value,
-      },
-    }));
-  };
+  initialValues() {
+    return {
+      username: "",
+      password: "",
+      fullname: "",
+      gender: "",
+      address: "",
+      email: "",
+      phone: "",
+    };
+  }
 
   render() {
-    const { form } = this.state;
     return (
       <Container className="mt-4">
         <Row className="justify-content-center">
@@ -89,125 +122,195 @@ class Signup extends Component {
 
             <h5 className="text-center my-4">Register new account now</h5>
 
-            {this.state.onSubmit === "end" && (
+            {!this.state.onSubmit && (
               <Alert variant={this.state.alert} info={this.state.message} />
             )}
 
-            <Form onSubmit={this.handleSubmit}>
-              <Form.Group controlId="username.ControlInput1">
-                <Form.Control
-                  type="text"
-                  name="username"
-                  placeholder="Your Username"
-                  value={form.username}
-                  onChange={this.handleInput}
-                />
-              </Form.Group>
-              <Form.Group controlId="password.ControlInput2">
-                <Form.Control
-                  type="password"
-                  name="password"
-                  placeholder="Your Password"
-                  onChange={this.handleInput}
-                  value={form.password}
-                />
-              </Form.Group>
-              <Form.Group controlId="fullname.ControlInput3">
-                <Form.Control
-                  type="text"
-                  name="fullname"
-                  placeholder="Full Name"
-                  value={form.fullname}
-                  onChange={this.handleInput}
-                />
-              </Form.Group>
+            <Formik
+              initialValues={this.initialValues()}
+              validationSchema={signupFormSchema}
+              onSubmit={(values, actions) => {
+                this.setState((prevState) => ({
+                  ...prevState,
+                  form: {
+                    ...prevState.form,
+                    username: values.username,
+                    password: values.password,
+                    fullname: values.fullname,
+                    gender: values.gender,
+                    address: values.address,
+                    email: values.email,
+                    phone: values.phone,
+                  },
+                }));
 
-              <Form.Group controlId="gender.ControlInput4">
-                <Row>
-                  <Col md>
+                setTimeout(() => {
+                  actions.setSubmitting(false);
+                  // actions.resetForm();
+                  this.handleSubmit();
+                }, 1000);
+              }}
+            >
+              {(props) => (
+                <Form onSubmit={props.handleSubmit}>
+                  <FormBootstrap.Group controlId="username.ControlInput1">
+                    <Field
+                      type="text"
+                      name="username"
+                      placeholder="Your Username"
+                      value={props.username}
+                      className={`form-control ${
+                        props.errors.username ? `is-invalid` : ``
+                      }`}
+                    />
+                    <ErrorMessage
+                      component="div"
+                      name="username"
+                      className="invalid-feedback"
+                    />
+                  </FormBootstrap.Group>
+                  <FormBootstrap.Group controlId="password.ControlInput2">
+                    <Field
+                      type="password"
+                      name="password"
+                      placeholder="Your Password"
+                      className={`form-control ${
+                        props.errors.password ? `is-invalid` : ``
+                      }`}
+                      value={props.password}
+                    />
+                    <ErrorMessage
+                      component="div"
+                      name="password"
+                      className="invalid-feedback"
+                    />
+                  </FormBootstrap.Group>
+                  <FormBootstrap.Group controlId="fullname.ControlInput3">
+                    <Field
+                      type="text"
+                      name="fullname"
+                      placeholder="Full Name"
+                      value={props.fullname}
+                      className={`form-control ${
+                        props.errors.fullname ? `is-invalid` : ``
+                      }`}
+                    />
+                    <ErrorMessage
+                      component="div"
+                      name="fullname"
+                      className="invalid-feedback"
+                    />
+                  </FormBootstrap.Group>
+
+                  <FormBootstrap.Group controlId="gender.ControlInput4">
                     <Row>
-                      <Col md={2}>
-                        <Form.Check>
-                          <input
-                            className="form-check-input"
-                            type="radio"
-                            name="gender"
-                            id="male"
-                            value="Male"
-                            onChange={this.handleInput}
-                          />
-                          <Form.Label>Male</Form.Label>
-                        </Form.Check>
-                      </Col>
-                      <Col md={2}>
-                        <div className="form-check ">
-                          <input
-                            className="form-check-input"
-                            type="radio"
-                            name="gender"
-                            id="female"
-                            value="Female"
-                            onChange={this.handleInput}
-                          />
-                          <Form.Label>Female</Form.Label>
-                        </div>
+                      <Col md>
+                        <Row>
+                          <Col md={2}>
+                            <FormBootstrap.Check>
+                              <Field
+                                className="form-check-input"
+                                type="radio"
+                                name="gender"
+                                id="male"
+                                value="Male"
+                              />
+                              <FormBootstrap.Label>Male</FormBootstrap.Label>
+                            </FormBootstrap.Check>
+                          </Col>
+                          <Col md={2}>
+                            <div className="form-check ">
+                              <Field
+                                className="form-check-input"
+                                type="radio"
+                                name="gender"
+                                id="female"
+                                value="Female"
+                              />
+                              <FormBootstrap.Label>Female</FormBootstrap.Label>
+                            </div>
+                          </Col>
+                        </Row>
                       </Col>
                     </Row>
-                  </Col>
-                </Row>
-              </Form.Group>
+                  </FormBootstrap.Group>
 
-              <Form.Group controlId="address.ControlTextarea5">
-                <Form.Label>Address</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  name="address"
-                  rows={3}
-                  value={form.address}
-                  onChange={this.handleInput}
-                />
-              </Form.Group>
-              <Form.Group controlId="email.ControlInput6">
-                <Form.Control
-                  type="email"
-                  name="email"
-                  placeholder="Your Email"
-                  value={form.email}
-                  onChange={this.handleInput}
-                />
-                <Form.Text className="text-muted">
-                  We'll never share your email with anyone else.
-                </Form.Text>
-              </Form.Group>
-              <Form.Group controlId="phone.ControlInput7">
-                <Form.Control
-                  type="number"
-                  name="phone"
-                  placeholder="Your Phone Number"
-                  value={form.phone}
-                  onChange={this.handleInput}
-                />
-              </Form.Group>
-              <Form.Group as={Row} controlId="formHorizontalCheck">
-                <Col>
-                  <Form.Check
-                    required
-                    label={
-                      "I have read and prohibited use and Balobe's Privacy Policy."
-                    }
-                  />
-                </Col>
-              </Form.Group>
+                  <FormBootstrap.Group controlId="address.ControlTextarea5">
+                    <FormBootstrap.Label>Address</FormBootstrap.Label>
+                    <Field
+                      as="textarea"
+                      name="address"
+                      rows={3}
+                      value={props.address}
+                      className={`form-control ${
+                        props.errors.address ? `is-invalid` : ``
+                      }`}
+                    />
+                    <ErrorMessage
+                      component="div"
+                      name="address"
+                      className="invalid-feedback"
+                    />
+                  </FormBootstrap.Group>
+                  <FormBootstrap.Group controlId="email.ControlInput6">
+                    <Field
+                      type="email"
+                      name="email"
+                      placeholder="Your Email"
+                      value={props.email}
+                      className={`form-control ${
+                        props.errors.email ? `is-invalid` : ``
+                      }`}
+                    />
+                    <ErrorMessage
+                      component="div"
+                      name="email"
+                      className="invalid-feedback"
+                    />
+                    <FormBootstrap.Text className="text-muted">
+                      We'll never share your email with anyone else.
+                    </FormBootstrap.Text>
+                  </FormBootstrap.Group>
+                  <FormBootstrap.Group controlId="phone.ControlInput7">
+                    <Field
+                      type="text"
+                      name="phone"
+                      placeholder="Your Phone Number"
+                      value={props.phone}
+                      className={`form-control ${
+                        props.errors.phone ? `is-invalid` : ``
+                      }`}
+                    />
+                    <ErrorMessage
+                      component="div"
+                      name="phone"
+                      className="invalid-feedback"
+                    />
+                  </FormBootstrap.Group>
+                  <FormBootstrap.Group as={Row} controlId="formHorizontalCheck">
+                    <Col>
+                      <FormBootstrap.Check
+                        required
+                        label={
+                          "I have read and prohibited use and Balobe's Privacy Policy."
+                        }
+                      />
+                    </Col>
+                  </FormBootstrap.Group>
 
-              <div className="d-inline">
-                {!this.state.onSubmit && (
-                  <Button type="submit" className="btn btn-primary mr-3">
-                    Submit
-                  </Button>
-                )}
-                {this.state.onSubmit && <Spinner class="text-center my-0" />}
-              </div>
-            </Form>
+                  <div className="d-inline">
+                    {!this.state.onSubmit && (
+                      <Button type="submit" className="btn btn-primary mr-3">
+                        Submit
+                      </Button>
+                    )}
+                    {this.state.onSubmit && (
+                      <Spinner class="text-center my-0" />
+                    )}
+                  </div>
+                </Form>
+              )}
+            </Formik>
           </Col>
         </Row>
       </Container>

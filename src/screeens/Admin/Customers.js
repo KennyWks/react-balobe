@@ -68,6 +68,10 @@ class Customers extends Component {
 
   render() {
     const { onLoad, listCustomers } = this.state;
+    const url =
+      process.env.REACT_APP_ENVIROMENT === "production"
+        ? process.env.REACT_APP_URL_IMAGES_PRODUCTION
+        : process.env.REACT_APP_URL_IMAGES_DEVELOPMENT;
     return (
       <div>
         <Header />
@@ -107,10 +111,16 @@ class Customers extends Component {
                               width="auto"
                               height="100px"
                               className="mr-2 rounded"
-                              src={`https://firebasestorage.googleapis.com/v0/b/balobe-d2a28.appspot.com/o/${v.picture.replace(
-                                "/",
-                                "%2F"
-                              )}?alt=media`}
+                              // src={`${url}/${v.picture.replace(
+                              //   "/",
+                              //   "%2F"
+                              // )}?alt=media`}
+                              src={`${url}/${
+                                process.env.REACT_APP_ENVIROMENT ===
+                                "production"
+                                  ? `${v.picture.replace("/", "%2F")}?alt=media`
+                                  : v.picture
+                              }`}
                               alt={v.name}
                             />
                           </td>

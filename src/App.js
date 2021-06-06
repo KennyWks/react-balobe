@@ -2,9 +2,11 @@ import React, { Component } from "react";
 import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
 import Home from "./screeens/Home/Home";
 import DetailItem from "./screeens/Product/DetailProduct";
-import Login from "./screeens/Auth/Login";
+import Signin from "./screeens/Auth/Signin";
 import Signup from "./screeens/Auth/Signup";
+import ConfirmRegister from "./screeens/Auth/ConfirmRegister";
 import ForgotPass from "./screeens/Auth/ForgotPass";
+import ChangePass from "./screeens/Auth/ChangePass";
 import Admin from "./screeens/Admin/Home";
 import AdminPelapak from "./screeens/Admin/Pelapak";
 import AdminCategory from "./screeens/Admin/Category";
@@ -27,7 +29,7 @@ class App extends Component {
         <Switch>
           <Route exact path="/" component={Home} />
           <Route exact path="/item/:id" component={DetailItem} />
-          <Route exact path="/signin" component={Login} />
+          <Route exact path="/signin" component={Signin} />
           <Route exact path="/admin" component={Admin} />
           <Route exact path="/admin/pelapak" component={AdminPelapak} />
           <Route exact path="/admin/category" component={AdminCategory} />
@@ -37,7 +39,13 @@ class App extends Component {
           <Route exact path="/review" component={Review} />
           <Route exact path="/profil/:id" component={Profil} />
           <Route exact path="/signup" component={Signup} />
+          <Route
+            exact
+            path="/auth/confirmAccount"
+            component={ConfirmRegister}
+          />
           <Route exact path="/forgotPass" component={ForgotPass} />
+          <Route exact path="/auth/confirmPass" component={ChangePass} />
           <Route exact path="/restricted" component={AccessWarn} />
           <Route exact path="/carts" component={Carts} />
           <Route exact path="/transaction/buy" component={BuyTransaction} />

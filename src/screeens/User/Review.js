@@ -39,8 +39,9 @@ class Review extends Component {
     };
   }
 
-  componentDidUpdate() {
+  componentDidMount() {
     document.title = `My Review - Balobe`;
+    this.getReview();
   }
 
   getReview = async () => {
@@ -70,10 +71,6 @@ class Review extends Component {
     }
     return star;
   };
-
-  componentDidMount() {
-    this.getReview();
-  }
 
   handleShow = async (e) => {
     this.setState((prevState) => ({

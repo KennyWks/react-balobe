@@ -25,6 +25,11 @@ const BuyTransaction = () => {
     getTransaction();
   }, []);
 
+  const url =
+    process.env.REACT_APP_ENVIROMENT === "production"
+      ? process.env.REACT_APP_URL_IMAGES_PRODUCTION
+      : process.env.REACT_APP_URL_IMAGES_DEVELOPMENT;
+
   return (
     <Container>
       <Row>
@@ -46,10 +51,12 @@ const BuyTransaction = () => {
                         width={100}
                         height={100}
                         className="m-2 rounded"
-                        src={`https://firebasestorage.googleapis.com/v0/b/balobe-d2a28.appspot.com/o/${v.image.replace(
-                          "/",
-                          "%2F"
-                        )}?alt=media`}
+                        // src={`${url}/${v.image.replace("/", "%2F")}?alt=media`}
+                        src={`${url}/${
+                          process.env.REACT_APP_ENVIROMENT === "production"
+                            ? `${v.image.replace("/", "%2F")}?alt=media`
+                            : v.image
+                        }`}
                         alt="icon user"
                       />
                       <Media.Body>

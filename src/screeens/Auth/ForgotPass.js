@@ -1,10 +1,24 @@
 import React, { Component } from "react";
 import { postData } from "../../helpers/CRUD";
 import { Link } from "react-router-dom";
-import { Container, Row, Col, Form, Button } from "react-bootstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Form as FormBootstrap,
+  Button,
+} from "react-bootstrap";
 import Spinner from "../../component/Spinner";
 import Alert from "../../component/Alert";
 import ImageLogo from "../../component/Image";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
+
+const forgotPassFormSchema = Yup.object().shape({
+  email: Yup.string()
+    .required("Email is required!")
+    .email("Email address invalid!"),
+});
 
 class ForgotPass extends Component {
   constructor(props) {
@@ -23,29 +37,36 @@ class ForgotPass extends Component {
     document.title = `Forgot Password - Balobe`;
   }
 
-  handleSubmit = async (e) => {
-    e.preventDefault();
+  handleSubmit = async () => {
     this.setState((prevState) => ({
       ...prevState,
       onSubmit: true,
+      message: "",
+      alert: "",
     }));
     try {
       const response = await postData("/auth/forgotPass", this.state.form);
-      if (response.status === 200) {
+      if (response.status === 201) {
         this.setState((prevState) => ({
           ...prevState,
-          message: "Please check your email!",
-          alert: "primary",
-        }));
-      } else {
-        this.setState((prevState) => ({
-          ...prevState,
-          message: "Network is error! Try again later",
-          alert: "danger",
+          message: response.data.data.msg,
+          alert: "success",
         }));
       }
     } catch (error) {
-      console.log(error);
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        } else {
+          this.setState((prevState) => ({
+            ...prevState,
+            message: error.response.data.error.msg,
+            alert: "danger",
+          }));
+        }
+      }
     }
     this.setState((prevState) => ({
       ...prevState,
@@ -53,20 +74,13 @@ class ForgotPass extends Component {
     }));
   };
 
-  handleInput = async (e) => {
-    const name = e.target.name;
-    const value = e.target.value;
-    this.setState((prevState) => ({
-      ...prevState,
-      form: {
-        ...prevState.form,
-        [name]: value,
-      },
-    }));
-  };
+  initialValues() {
+    return {
+      email: "",
+    };
+  }
 
   render() {
-    const { form } = this.state;
     return (
       <Container className="mt-4">
         <Row>
@@ -86,31 +100,58 @@ class ForgotPass extends Component {
               <Alert variant={this.state.alert} info={this.state.message} />
             )}
 
-            <Form onSubmit={this.handleSubmit}>
-              <Form.Group controlId="exampleForm.ControlInput1">
-                <Form.Control
-                  type="text"
-                  name="email"
-                  placeholder="Your email"
-                  value={form.email}
-                  onChange={this.handleInput}
-                />
-              </Form.Group>
-              <div
-                style={{
-                  width: "auto",
-                }}
-              >
-                <Button type="submit" className="btn btn-primary">
-                  Send
-                </Button>
-              </div>
-            </Form>
+            <Formik
+              initialValues={this.initialValues()}
+              validationSchema={forgotPassFormSchema}
+              onSubmit={(values, actions) => {
+                this.setState((prevState) => ({
+                  ...prevState,
+                  form: {
+                    ...prevState.form,
+                    email: values.email,
+                  },
+                }));
 
+                setTimeout(() => {
+                  actions.setSubmitting(false);
+                  // actions.resetForm();
+                  this.handleSubmit();
+                }, 1000);
+              }}
+            >
+              {(props) => (
+                <Form onSubmit={props.handleSubmit}>
+                  <FormBootstrap.Group controlId="email">
+                    <Field
+                      type="text"
+                      name="email"
+                      placeholder="Your email"
+                      className={`form-control ${
+                        props.errors.email ? `is-invalid` : ``
+                      }`}
+                      value={props.email}
+                    />
+                    <ErrorMessage
+                      component="div"
+                      name="email"
+                      className="invalid-feedback"
+                    />
+                  </FormBootstrap.Group>
+                  <div
+                    style={{
+                      width: "auto",
+                    }}
+                  >
+                    <Button type="submit" className="btn btn-primary">
+                      Send
+                    </Button>
+                  </div>
+                </Form>
+              )}
+            </Formik>
             <div className="text-center">
               <h6 className="my-3">
-                Back to page <Link to={`/signin`}>Login</Link>/
-                <Link to={`/signup`}>Register</Link>
+                Back to <Link to={`/signin`}>Login</Link> or <Link to={`/signup`}>Register</Link>
               </h6>
             </div>
           </Col>

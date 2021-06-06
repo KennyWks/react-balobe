@@ -18,7 +18,7 @@ class Seler extends Component {
     super(props);
     this.state = {
       load: "",
-      data: {},
+      dataPelapak: {},
       city: [],
       lgRegisterShow: false,
       lgUpdateShow: false,
@@ -26,7 +26,7 @@ class Seler extends Component {
       setLgShow: false,
       form: {
         name: "",
-        logo: "default.png",
+        logo: "img-logo/default.jpg",
         description: "",
         city: "",
         address: "",
@@ -57,7 +57,7 @@ class Seler extends Component {
       if (response.status === 200) {
         this.setState((prevState) => ({
           ...prevState,
-          data: response.data.data,
+          dataPelapak: response.data.data,
           form: {
             name: response.data.data.name,
             logo: response.data.data.logo,
@@ -233,11 +233,15 @@ class Seler extends Component {
   };
 
   render() {
-    const { data, city } = this.state;
+    const { dataPelapak, city } = this.state;
+    const url =
+      process.env.REACT_APP_ENVIROMENT === "production"
+        ? process.env.REACT_APP_URL_IMAGES_PRODUCTION
+        : process.env.REACT_APP_URL_IMAGES_DEVELOPMENT;
     return (
       <div>
         {this.state.load && <Spinner class="text-center my-3" />}
-        {!Object.keys(data).length > 0 && this.state.load === false && (
+        {!Object.keys(dataPelapak).length > 0 && this.state.load === false && (
           <div>
             <Container>
               <Row>
@@ -321,7 +325,7 @@ class Seler extends Component {
           </div>
         )}
 
-        {Object.keys(data).length > 0 && (
+        {Object.keys(dataPelapak).length > 0 && (
           <div>
             <Container>
               <Row className="mt-2">
@@ -330,28 +334,37 @@ class Seler extends Component {
                     <div className="row no-gutters">
                       <div className="col-md-4">
                         <img
-                          src={`https://firebasestorage.googleapis.com/v0/b/balobe-d2a28.appspot.com/o/${data.logo.replace(
-                            "/",
-                            "%2F"
-                          )}?alt=media`}
+                          // src={`${url}/${dataPelapak.logo.replace(
+                          //   "/",
+                          //   "%2F"
+                          // )}?alt=media`}
+                          src={`${url}/${
+                            process.env.REACT_APP_ENVIROMENT === "production"
+                              ? `${dataPelapak.logo.replace(
+                                  "/",
+                                  "%2F"
+                                )}?alt=media`
+                              : dataPelapak.logo
+                          }`}
                           className="card-img"
                           alt="your product"
                         />
                       </div>
                       <div className="col-md-8">
                         <div className="card-body">
-                          <h5 className="card-title">{data.name}</h5>
+                          <h5 className="card-title">{dataPelapak.name}</h5>
                           <p className="card-text">
                             <MdPlace />
                             &nbsp;
                             <span className="text-muted">
-                              {this.setCityofUser(data.city)} | {data.address}
+                              {this.setCityofUser(dataPelapak.city)} |{" "}
+                              {dataPelapak.address}
                             </span>
                           </p>
-                          <p className="card-text">{data.description}</p>
+                          <p className="card-text">{dataPelapak.description}</p>
                           <Link
                             className="btn btn-primary"
-                            to={`/sell/${data.id_pelapak}`}
+                            to={`/sell/${dataPelapak.id_pelapak}`}
                           >
                             My Item
                           </Link>
@@ -369,7 +382,7 @@ class Seler extends Component {
                           </Button>
                           <Link
                             className="btn btn-primary d-inline"
-                            to={`/transaction/sell/${data.id_pelapak}`}
+                            to={`/transaction/sell/${dataPelapak.id_pelapak}`}
                           >
                             Transaction
                           </Link>

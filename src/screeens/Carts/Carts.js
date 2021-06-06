@@ -120,8 +120,7 @@ class Carts extends Component {
       if (responseCheckout.status === 200 && responseTransaction) {
         await this.setStateCartsChecked(null, null, responseTransaction.msg);
       }
-    } catch (error) {
-    }
+    } catch (error) {}
     this.setState((prevState) => ({
       ...prevState,
       onLoad: true,
@@ -281,6 +280,10 @@ class Carts extends Component {
 
   render() {
     const { listCarts, onLoad, message } = this.state;
+    const url =
+      process.env.REACT_APP_ENVIROMENT === "production"
+        ? process.env.REACT_APP_URL_IMAGES_PRODUCTION
+        : process.env.REACT_APP_URL_IMAGES_DEVELOPMENT;
     return (
       <Container className="mt-5">
         <div className="text-center">
@@ -365,10 +368,19 @@ class Carts extends Component {
                                   width="auto"
                                   height="100px"
                                   className="mr-2 rounded"
-                                  src={`https://firebasestorage.googleapis.com/v0/b/balobe-d2a28.appspot.com/o/${v.image.replace(
-                                    "/",
-                                    "%2F"
-                                  )}?alt=media`}
+                                  // src={`${url}/${v.image.replace(
+                                  //   "/",
+                                  //   "%2F"
+                                  // )}?alt=media`}
+                                  src={`${url}/${
+                                    process.env.REACT_APP_ENVIROMENT ===
+                                    "production"
+                                      ? `${v.image.replace(
+                                          "/",
+                                          "%2F"
+                                        )}?alt=media`
+                                      : v.image
+                                  }`}
                                   alt={v.name_item}
                                 />
                               </div>
@@ -415,11 +427,12 @@ class Carts extends Component {
                                 (Total price & Courier)
                               </h5>
                               <div>
-                              <b>IDR {v.total_price}</b> |{" "}
+                                <b>IDR {v.total_price}</b> |{" "}
                                 <small>Cost of price</small>
                               </div>
                               <div>
-                              <b>IDR {v.courier}</b> | <small>Cost of courier</small>
+                                <b>IDR {v.courier}</b> |{" "}
+                                <small>Cost of courier</small>
                               </div>
                             </div>
                           </div>

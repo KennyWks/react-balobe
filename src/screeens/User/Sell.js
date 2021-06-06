@@ -368,6 +368,10 @@ class Sell extends Component {
 
   render() {
     const { listItem, load, onSubmit, listCategory } = this.state;
+    const url =
+      process.env.REACT_APP_ENVIROMENT === "production"
+        ? process.env.REACT_APP_URL_IMAGES_PRODUCTION
+        : process.env.REACT_APP_URL_IMAGES_DEVELOPMENT;
     return (
       <Container className="mt-4">
         {load && <Spinner class="text-center my-3" />}
@@ -499,10 +503,12 @@ class Sell extends Component {
                   <div className="row no-gutters">
                     <div className="col-md-4">
                       <img
-                        src={`https://firebasestorage.googleapis.com/v0/b/balobe-d2a28.appspot.com/o/${v.image.replace(
-                          "/",
-                          "%2F"
-                        )}?alt=media`}
+                        // src={`${url}/${v.image.replace("/", "%2F")}?alt=media`}
+                        src={`${url}/${
+                          process.env.REACT_APP_ENVIROMENT === "production"
+                            ? `${v.image.replace("/", "%2F")}?alt=media`
+                            : v.image
+                        }`}
                         className="card-img"
                         alt="your product"
                       />
@@ -532,7 +538,7 @@ class Sell extends Component {
                           id={v.id_item}
                           onClick={this.handleShowEditImage}
                         >
-                          Edit Logo
+                          Edit Image
                         </Button>
                         <Button
                           variant="danger"

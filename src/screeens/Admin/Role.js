@@ -6,14 +6,21 @@ import {
   Table,
   Button,
   Modal,
-  Form,
+  Form as FormBootstrap,
 } from "react-bootstrap";
 import Header from "../Layout/AdminTemplates";
 import { Footer } from "../Layout/Templates";
 import { getData, postData, patchData, deleteData } from "../../helpers/CRUD";
 import Spinner from "../../component/Spinner";
+import Alert from "../../component/Alert";
 import FormSearch from "../../component/FormSearch";
 import { connect } from "react-redux";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
+
+const roleFormSchema = Yup.object().shape({
+  name: Yup.string().required("Name of role is required!"),
+});
 
 class Role extends Component {
   constructor(props) {
@@ -76,23 +83,17 @@ class Role extends Component {
         },
       }));
     } catch (error) {
-      console.log(error);
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        }
+      }
     }
     this.setState((prevState) => ({
       ...prevState,
       onLoad: false,
-    }));
-  };
-
-  handleInput = (e) => {
-    const name = e.target.name;
-    const value = e.target.value;
-    this.setState((prevState) => ({
-      ...prevState,
-      form: {
-        ...prevState.form,
-        [name]: value,
-      },
     }));
   };
 
@@ -108,7 +109,15 @@ class Role extends Component {
         detailRole: response.data.data,
       }));
     } catch (error) {
-      console.log(error);
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        } else {
+          alert(error.response.data.error.msg);
+        }
+      }
     }
     this.setState((prevState) => ({
       ...prevState,
@@ -154,27 +163,40 @@ class Role extends Component {
     }
   };
 
-  handleAddRole = async (e) => {
-    e.preventDefault();
+  handleAddRole = async () => {
     this.setState((prevState) => ({
       ...prevState,
       onSubmit: true,
+      message: "",
+      alert: "",
     }));
     try {
       const response = await postData(`/role`, this.state.form);
-      if (response.status === 200) {
+      if (response.status === 201) {
         this.setState((prevState) => ({
           ...prevState,
           form: {
             ...prevState.form,
             name: "",
           },
-          message: "Data is added",
+          message: response.data.data.msg,
           alert: "success",
         }));
       }
     } catch (error) {
-      console.log(error);
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        } else {
+          this.setState((prevState) => ({
+            ...prevState,
+            message: error.response.data.error.msg,
+            alert: "danger",
+          }));
+        }
+      }
     }
     this.setState((prevState) => ({
       ...prevState,
@@ -184,11 +206,12 @@ class Role extends Component {
     this.getRole();
   };
 
-  handleUpdateRole = async (e) => {
-    e.preventDefault();
+  handleUpdateRole = async () => {
     this.setState((prevState) => ({
       ...prevState,
       onSubmit: true,
+      message: "",
+      alert: "",
     }));
     try {
       const response = await patchData(
@@ -203,12 +226,24 @@ class Role extends Component {
             ...prevState.form,
             name: "",
           },
-          message: "Data is updated",
+          message: response.data.data.msg,
           alert: "success",
         }));
       }
     } catch (error) {
-      console.log(error);
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        } else {
+          this.setState((prevState) => ({
+            ...prevState,
+            message: error.response.data.error.msg,
+            alert: "danger",
+          }));
+        }
+      }
     }
     this.setState((prevState) => ({
       ...prevState,
@@ -222,18 +257,32 @@ class Role extends Component {
     this.setState((prevState) => ({
       ...prevState,
       onLoad: true,
+      message: "",
+      alert: "",
     }));
     try {
       const response = await deleteData(`/role/${role_id}`);
       if (response.status === 200) {
         this.setState((prevState) => ({
           ...prevState,
-          message: "Data is deleted",
+          message: response.data.data.msg,
           alert: "success",
         }));
       }
     } catch (error) {
-      console.log(error);
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        } else {
+          this.setState((prevState) => ({
+            ...prevState,
+            message: error.response.data.error.msg,
+            alert: "danger",
+          }));
+        }
+      }
     }
     this.setState((prevState) => ({
       ...prevState,
@@ -242,6 +291,12 @@ class Role extends Component {
     this.getRole();
   };
 
+  initialValues() {
+    return {
+      name: "",
+    };
+  }
+
   render() {
     const { onLoad, listRole } = this.state;
     return (
@@ -249,6 +304,21 @@ class Role extends Component {
         <Header />
         <Container className="mt-3">
           <FormSearch path={`/admin/role`} />
+          {this.state.alert === "success" && (
+            <Alert
+              variant={this.state.alert}
+              info={this.state.message}
+              className="mt-2"
+            />
+          )}
+
+          {this.state.alert === "danger" && (
+            <Alert
+              variant={this.state.alert}
+              info={this.state.message}
+              className="mt-2"
+            />
+          )}
           {onLoad && <Spinner class="text-center my-3" />}
           <Row className="justify-content-center mt-2">
             {!onLoad && (
@@ -322,24 +392,53 @@ class Role extends Component {
                 </Modal.Title>
               </Modal.Header>
               <Modal.Body>
-                <Form onSubmit={this.handleAddRole}>
-                  <Form.Group controlId="name">
-                    <Form.Label>Name</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="name"
-                      placeholder="Enter name role"
-                      value={this.state.form.name}
-                      onChange={this.handleInput}
-                    />
-                  </Form.Group>
-                  <Button variant="primary" type="submit">
-                    {this.state.onSubmit && (
-                      <Spinner class="text-center my-0" />
-                    )}
-                    {!this.state.onSubmit && <span> Save</span>}
-                  </Button>
-                </Form>{" "}
+                <Formik
+                  initialValues={this.initialValues()}
+                  validationSchema={roleFormSchema}
+                  onSubmit={(values, actions) => {
+                    this.setState((prevState) => ({
+                      ...prevState,
+                      form: {
+                        ...prevState.form,
+                        name: values.name,
+                      },
+                    }));
+
+                    setTimeout(() => {
+                      actions.setSubmitting(false);
+                      // actions.resetForm();
+                      this.handleAddRole();
+                    }, 1000);
+                  }}
+                >
+                  {(props) => (
+                    <Form onSubmit={props.handleSubmit}>
+                      <FormBootstrap.Group controlId="name">
+                        <FormBootstrap.Label>Name</FormBootstrap.Label>
+                        <Field
+                          type="text"
+                          name="name"
+                          placeholder="Enter name role"
+                          className={`form-control ${
+                            props.errors.name ? `is-invalid` : ``
+                          }`}
+                          value={props.name}
+                        />
+                        <ErrorMessage
+                          component="div"
+                          name="name"
+                          className="invalid-feedback"
+                        />
+                      </FormBootstrap.Group>
+                      <Button variant="primary" type="submit">
+                        {this.state.onSubmit && (
+                          <Spinner class="text-center my-0" />
+                        )}
+                        {!this.state.onSubmit && <span> Save</span>}
+                      </Button>
+                    </Form>
+                  )}
+                </Formik>
               </Modal.Body>
             </Modal>
 
@@ -356,24 +455,54 @@ class Role extends Component {
                 </Modal.Title>
               </Modal.Header>
               <Modal.Body>
-                <Form onSubmit={this.handleUpdateRole}>
-                  <Form.Group controlId="name">
-                    <Form.Label>Name</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="name"
-                      placeholder="Enter name category"
-                      value={this.state.form.name}
-                      onChange={this.handleInput}
-                    />
-                  </Form.Group>
-                  <Button variant="primary" type="submit">
-                    {this.state.onSubmit && (
-                      <Spinner class="text-center my-0" />
-                    )}
-                    {!this.state.onSubmit && <span> Edit Data</span>}
-                  </Button>
-                </Form>{" "}
+                <Formik
+                  initialValues={this.state.form}
+                  enableReinitialize
+                  validationSchema={roleFormSchema}
+                  onSubmit={(values, actions) => {
+                    this.setState((prevState) => ({
+                      ...prevState,
+                      form: {
+                        ...prevState.form,
+                        name: values.name,
+                      },
+                    }));
+
+                    setTimeout(() => {
+                      actions.setSubmitting(false);
+                      // actions.resetForm();
+                      this.handleUpdateRole();
+                    }, 1000);
+                  }}
+                >
+                  {(props) => (
+                    <Form onSubmit={props.handleSubmit}>
+                      <FormBootstrap.Group controlId="name">
+                        <FormBootstrap.Label>Name</FormBootstrap.Label>
+                        <Field
+                          type="text"
+                          name="name"
+                          placeholder="Enter name category"
+                          className={`form-control ${
+                            props.errors.name ? `is-invalid` : ``
+                          }`}
+                          value={props.values.name}
+                        />
+                        <ErrorMessage
+                          component="div"
+                          name="name"
+                          className="invalid-feedback"
+                        />
+                      </FormBootstrap.Group>
+                      <Button variant="primary" type="submit">
+                        {this.state.onSubmit && (
+                          <Spinner class="text-center my-0" />
+                        )}
+                        {!this.state.onSubmit && <span> Edit Data</span>}
+                      </Button>
+                    </Form>
+                  )}
+                </Formik>
               </Modal.Body>
             </Modal>
           </Row>

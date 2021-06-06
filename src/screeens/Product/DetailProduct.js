@@ -333,6 +333,10 @@ class DetailProduct extends Component {
   render() {
     const { detailProduct, review, onLoad, city, onCheck, resultCourier } =
       this.state;
+    const url =
+      process.env.REACT_APP_ENVIROMENT === "production"
+        ? process.env.REACT_APP_URL_IMAGES_PRODUCTION
+        : process.env.REACT_APP_URL_IMAGES_DEVELOPMENT;
     return (
       <div>
         <Header />
@@ -348,10 +352,16 @@ class DetailProduct extends Component {
                       <div className="row no-gutters">
                         <div className="col-md-4">
                           <img
-                            src={`https://firebasestorage.googleapis.com/v0/b/balobe-d2a28.appspot.com/o/${detailProduct.image.replace(
-                              "/",
-                              "%2F"
-                            )}?alt=media`}
+                          
+                            // src={`${url}/${detailProduct.image.replace(
+                            //   "/",
+                            //   "%2F"
+                            // )}?alt=media`}
+                            src={`${url}/${
+                              process.env.REACT_APP_ENVIROMENT === "production"
+                                ? `${detailProduct.image.replace("/", "%2F")}?alt=media`
+                                : detailProduct.image
+                            }`}
                             className="card-img"
                             alt={detailProduct.name}
                           />

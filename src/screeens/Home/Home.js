@@ -118,6 +118,10 @@ class Home extends Component {
   render() {
     const { data, metadata } = this.state.listProduct;
     const { onLoad } = this.state;
+    const url =
+      process.env.REACT_APP_ENVIROMENT === "production"
+        ? process.env.REACT_APP_URL_IMAGES_PRODUCTION
+        : process.env.REACT_APP_URL_IMAGES_DEVELOPMENT;
     return (
       <div>
         <Header />
@@ -143,10 +147,11 @@ class Home extends Component {
                   >
                     <Card.Img
                       variant="top"
-                      src={`https://firebasestorage.googleapis.com/v0/b/balobe-d2a28.appspot.com/o/${v.image.replace(
-                        "/",
-                        "%2F"
-                      )}?alt=media`}
+                      src={`${url}/${
+                        process.env.REACT_APP_ENVIROMENT === "production"
+                          ? `${v.image.replace("/", "%2F")}?alt=media`
+                          : v.image
+                      }`}
                     />
                     <Card.Body className={bodyProduct.productBody}>
                       <div

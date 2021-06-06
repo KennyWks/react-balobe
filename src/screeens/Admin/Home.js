@@ -1,10 +1,67 @@
 import React, { Component } from "react";
-import { Container, Row, Col, Button, Modal, Form } from "react-bootstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Button,
+  Modal,
+  Form as FormBootstrap,
+} from "react-bootstrap";
 import Header from "../Layout/AdminTemplates";
 import { Footer } from "../Layout/Templates";
 import { connect } from "react-redux";
 import Spinner from "../../component/Spinner";
+import Alert from "../../component/Alert";
 import { getData, patchData } from "../../helpers/CRUD";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
+
+const updateProfilFormSchema = Yup.object().shape({
+  fullname: Yup.string().required("Fullname is required!"),
+  gender: Yup.string().required("Gender is required!"),
+  phone: Yup.string()
+    .required("Phone is required!")
+    .min(11, "Phone must be 11 characters at minimum!")
+    .max(12, "Phone must be 12 characters at maximum!"),
+  email: Yup.string()
+    .required("Email is required!")
+    .email("Invalid email address!"),
+  address: Yup.string().required("Address is required!"),
+});
+
+// const UploadFileSchema = Yup.object().shape({
+//   file: Yup.mixed().required("You need to provide a file").test("fileSize", "The file is too large", (value) => {
+//     return value && value[0].sienter <= 2000000;
+// }).test("type", "Only the following formats are accepted: .jpeg, .jpg, .bmp, .pdf and .doc", (value) => {
+//   return value && (
+//       value[0].type === "image/jpeg" ||
+//       value[0].type === "image/bmp" ||
+//       value[0].type === "image/png" ||
+//       value[0].type === 'application/pdf' ||
+//       value[0].type === "application/msword"
+//   );
+// }),
+// });
+
+const uploadFileSchema = Yup.object().shape({
+  image: Yup.mixed()
+    .required("You need to provide a file")
+    .test("fileSize", "The file is too large", (value) => {
+      return value && value[0].sienter <= 1000000;
+    })
+    .test(
+      "type",
+      "Only the following formats are accepted: .jpeg, .jpg, .png",
+      (value) => {
+        return (
+          value &&
+          (value[0].type === "image/jpeg" ||
+            value[0].type === "image/png" ||
+            value[0].type === "image/png")
+        );
+      }
+    ),
+});
 
 class Home extends Component {
   constructor(props) {
@@ -62,7 +119,13 @@ class Home extends Component {
         detailUser: response.data.data,
       }));
     } catch (error) {
-      console.log(error);
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        }
+      }
     }
     this.setState((prevState) => ({
       ...prevState,
@@ -104,11 +167,12 @@ class Home extends Component {
       showModalPicture: false,
     }));
 
-  handleSubmitChangeProfil = async (e) => {
-    e.preventDefault();
+  handleSubmitChangeProfil = async () => {
     this.setState((prevState) => ({
       ...prevState,
       onSubmit: true,
+      message: "",
+      alert: "",
     }));
     try {
       const response = await patchData(
@@ -125,12 +189,24 @@ class Home extends Component {
             email: "",
             phone: "",
           },
-          message: "Data is updated",
+          message: response.data.data.msg,
           alert: "success",
         }));
       }
     } catch (error) {
-      console.log(error);
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        } else {
+          this.setState((prevState) => ({
+            ...prevState,
+            message: error.response.data.error.msg,
+            alert: "danger",
+          }));
+        }
+      }
     }
     this.setState((prevState) => ({
       ...prevState,
@@ -145,6 +221,8 @@ class Home extends Component {
     this.setState((prevState) => ({
       ...prevState,
       onSubmit: true,
+      message: "",
+      alert: "",
     }));
     try {
       const response = await patchData(
@@ -155,12 +233,24 @@ class Home extends Component {
         this.setState((prevState) => ({
           ...prevState,
           image: "",
-          message: "Your photo is change",
+          message: response.data.data.msg,
           alert: "success",
         }));
       }
     } catch (error) {
-      console.log(error);
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        } else {
+          this.setState((prevState) => ({
+            ...prevState,
+            message: error.response.data.error.msg,
+            alert: "danger",
+          }));
+        }
+      }
     }
     this.setState((prevState) => ({
       ...prevState,
@@ -168,18 +258,6 @@ class Home extends Component {
     }));
     this.handleCloseModalUpdatePicture();
     this.getUser();
-  };
-
-  handleInput = (e) => {
-    const name = e.target.name;
-    const value = e.target.value;
-    this.setState((prevState) => ({
-      ...prevState,
-      form: {
-        ...prevState.form,
-        [name]: value,
-      },
-    }));
   };
 
   onImageChange = (e) => {
@@ -199,12 +277,30 @@ class Home extends Component {
 
   render() {
     const { detailUser, onLoad } = this.state;
+    const url =
+      process.env.REACT_APP_ENVIROMENT === "production"
+        ? process.env.REACT_APP_URL_IMAGES_PRODUCTION
+        : process.env.REACT_APP_URL_IMAGES_DEVELOPMENT;
     return (
       <div>
         <Header />
         <Container className="mt-3">
           {onLoad && <Spinner class="text-center my-3" />}
+          {this.state.alert === "success" && (
+            <Alert
+              variant={this.state.alert}
+              info={this.state.message}
+              className="mt-2"
+            />
+          )}
 
+          {this.state.alert === "danger" && (
+            <Alert
+              variant={this.state.alert}
+              info={this.state.message}
+              className="mt-2"
+            />
+          )}
           {!onLoad && Object.keys(detailUser).length > 0 && (
             <div>
               <h3>Welcome {detailUser.fullname}!</h3>
@@ -212,10 +308,18 @@ class Home extends Component {
                 <Row className="no-gutters">
                   <Col md={4}>
                     <img
-                      src={`https://firebasestorage.googleapis.com/v0/b/balobe-d2a28.appspot.com/o/${detailUser.picture.replace(
-                        "/",
-                        "%2F"
-                      )}?alt=media`}
+                      // src={`${url}/${detailUser.picture.replace(
+                      //   "/",
+                      //   "%2F"
+                      // )}?alt=media`}
+                      src={`${url}/${
+                        process.env.REACT_APP_ENVIROMENT === "production"
+                          ? `${detailUser.picture.replace(
+                              "/",
+                              "%2F"
+                            )}?alt=media`
+                          : detailUser.picture
+                      }`}
                       className="card-img"
                       alt="gambar profil pengguna"
                     />
@@ -255,66 +359,156 @@ class Home extends Component {
                           <Modal.Title>Update Profil</Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
-                          <Form onSubmit={this.handleSubmitChangeProfil}>
-                            <Form.Group controlId="name">
-                              <Form.Label>Full Name</Form.Label>
-                              <Form.Control
-                                type="text"
-                                name="fullname"
-                                placeholder="Enter Full Name"
-                                value={this.state.form.fullname}
-                                onChange={this.handleInput}
-                              />
-                            </Form.Group>
-                            <Form.Group controlId="gender">
-                              <Form.Label>Gender</Form.Label>
-                              <Form.Control
-                                as="select"
-                                name="gender"
-                                value={this.state.form.gender}
-                                onChange={this.handleInput}
-                              >
-                                <option>Male</option>
-                                <option>Female</option>
-                              </Form.Control>
-                            </Form.Group>
-                            <Form.Group controlId="email">
-                              <Form.Label>Phone Number</Form.Label>
-                              <Form.Control
-                                type="number"
-                                name="phone"
-                                placeholder="Enter your phone number"
-                                value={this.state.form.phone}
-                                onChange={this.handleInput}
-                              />
-                            </Form.Group>
-                            <Form.Group controlId="email">
-                              <Form.Label>Email address</Form.Label>
-                              <Form.Control
-                                type="email"
-                                name="email"
-                                placeholder="Enter your email"
-                                value={this.state.form.email}
-                                onChange={this.handleInput}
-                              />
-                            </Form.Group>
-                            <Form.Group controlId="address">
-                              <Form.Label>Address</Form.Label>
-                              <Form.Control
-                                as="textarea"
-                                name="address"
-                                rows={3}
-                                value={this.state.form.address}
-                                onChange={this.handleInput}
-                              />
-                            </Form.Group>
-                            <Button variant="primary" type="submit">
-                              {this.state.onSubmit && (
-                                <Spinner class="text-center my-0" />
-                              )}
-                              {!this.state.onSubmit && <span> Edit Data</span>}
-                            </Button>
-                          </Form>{" "}
+                          <Formik
+                            initialValues={this.state.form}
+                            enableReinitialize
+                            validationSchema={updateProfilFormSchema}
+                            onSubmit={(values, actions) => {
+                              this.setState((prevState) => ({
+                                ...prevState,
+                                form: {
+                                  ...prevState.form,
+                                  fullname: values.fullname,
+                                  gender: values.gender,
+                                  phone: values.phone,
+                                  email: values.email,
+                                  address: values.address,
+                                },
+                              }));
+
+                              setTimeout(() => {
+                                actions.setSubmitting(false);
+                                // actions.resetForm();
+                                this.handleSubmitChangeProfil();
+                              }, 1000);
+                            }}
+                          >
+                            {(props) => (
+                              <Form onSubmit={props.handleSubmit}>
+                                <FormBootstrap.Group controlId="name">
+                                  <FormBootstrap.Label>
+                                    Full Name
+                                  </FormBootstrap.Label>
+                                  <Field
+                                    type="text"
+                                    name="fullname"
+                                    placeholder="Enter Full Name"
+                                    value={props.values.fullname}
+                                    className={`form-control ${
+                                      props.errors.fullname ? `is-invalid` : ``
+                                    }`}
+                                  />
+                                  <ErrorMessage
+                                    component="div"
+                                    name="fullname"
+                                    className="invalid-feedback"
+                                  />
+                                </FormBootstrap.Group>
+
+                                <FormBootstrap.Group controlId="gender.ControlInput4">
+                                  <Field
+                                    name="gender"
+                                    component="select"
+                                    placeholder="Select Gender"
+                                    className="form-control"
+                                  >
+                                    <option
+                                      defaultValue={
+                                        props.values.gender === "Male"
+                                          ? "true"
+                                          : "false"
+                                      }
+                                      value="Male"
+                                    >
+                                      Male
+                                    </option>
+                                    <option
+                                      defaultValue={
+                                        props.values.gender === "Female"
+                                          ? "true"
+                                          : "false"
+                                      }
+                                      value="Female"
+                                    >
+                                      Female
+                                    </option>
+                                  </Field>
+
+                                  <ErrorMessage
+                                    component="div"
+                                    name="gender"
+                                    className="invalid-feedback"
+                                  />
+                                </FormBootstrap.Group>
+
+                                <FormBootstrap.Group controlId="phone">
+                                  <FormBootstrap.Label>
+                                    Phone Number
+                                  </FormBootstrap.Label>
+                                  <Field
+                                    type="text"
+                                    name="phone"
+                                    placeholder="Enter your phone number"
+                                    value={props.values.phone}
+                                    className={`form-control ${
+                                      props.errors.phone ? `is-invalid` : ``
+                                    }`}
+                                  />
+                                  <ErrorMessage
+                                    component="div"
+                                    name="phone"
+                                    className="invalid-feedback"
+                                  />
+                                </FormBootstrap.Group>
+                                <FormBootstrap.Group controlId="email">
+                                  <FormBootstrap.Label>
+                                    Email address
+                                  </FormBootstrap.Label>
+                                  <Field
+                                    type="email"
+                                    name="email"
+                                    placeholder="Enter your email"
+                                    value={props.values.email}
+                                    className={`form-control ${
+                                      props.errors.email ? `is-invalid` : ``
+                                    }`}
+                                  />
+                                  <ErrorMessage
+                                    component="div"
+                                    name="email"
+                                    className="invalid-feedback"
+                                  />
+                                </FormBootstrap.Group>
+                                <FormBootstrap.Group controlId="address">
+                                  <FormBootstrap.Label>
+                                    Address
+                                  </FormBootstrap.Label>
+                                  <Field
+                                    as="textarea"
+                                    name="address"
+                                    rows={3}
+                                    value={props.values.address}
+                                    className={`form-control ${
+                                      props.errors.address ? `is-invalid` : ``
+                                    }`}
+                                  />
+                                  <ErrorMessage
+                                    component="div"
+                                    name="address"
+                                    className="invalid-feedback"
+                                  />
+                                </FormBootstrap.Group>
+                                <Button variant="primary" type="submit">
+                                  {this.state.onSubmit && (
+                                    <Spinner class="text-center my-0" />
+                                  )}
+                                  {!this.state.onSubmit && (
+                                    <span> Edit Data</span>
+                                  )}
+                                </Button>
+                              </Form>
+                            )}
+                          </Formik>
                         </Modal.Body>
                       </Modal>
 
@@ -331,13 +525,16 @@ class Home extends Component {
                           </Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
-                          <Form onSubmit={this.handleSubmitChangeImage}>
-                            <Form.Group controlId="exampleForm.ControlInput1">
-                              <Form.File
+                          <FormBootstrap
+                            onSubmit={this.handleSubmitChangeImage}
+                          >
+                            <FormBootstrap.Group controlId="exampleForm.ControlInput1">
+                              <FormBootstrap.File
                                 id="exampleFormControlFile1"
                                 label="Photo file"
                                 name="image"
                                 onChange={this.onImageChange}
+                                required
                               />
                               <img
                                 width={64}
@@ -346,14 +543,14 @@ class Home extends Component {
                                 src={this.state.pathFile}
                                 alt="path file"
                               />
-                            </Form.Group>
+                            </FormBootstrap.Group>
                             <Button type="submit" className="btn btn-primary">
                               {!this.state.onSubmit && <span>Upload</span>}
                               {this.state.onSubmit && (
                                 <Spinner class="text-center my-0" />
                               )}
                             </Button>
-                          </Form>
+                          </FormBootstrap>
                         </Modal.Body>
                       </Modal>
                     </div>

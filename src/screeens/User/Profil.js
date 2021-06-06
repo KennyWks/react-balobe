@@ -176,6 +176,10 @@ class Profil extends Component {
 
   render() {
     const { dataUser } = this.state;
+    const url =
+      process.env.REACT_APP_ENVIROMENT === "production"
+        ? process.env.REACT_APP_URL_IMAGES_PRODUCTION
+        : process.env.REACT_APP_URL_IMAGES_DEVELOPMENT;
     return (
       <div>
         <Container>
@@ -196,10 +200,18 @@ class Profil extends Component {
                   <div>
                     <div className="text-center">
                       <img
-                        src={`https://firebasestorage.googleapis.com/v0/b/balobe-d2a28.appspot.com/o/${dataUser.picture.replace(
-                          "/",
-                          "%2F"
-                        )}?alt=media`}
+                        // src={`${url}/${dataUser.picture.replace(
+                        //   "/",
+                        //   "%2F"
+                        // )}?alt=media`}
+                        src={`${url}/${
+                          process.env.REACT_APP_ENVIROMENT === "production"
+                            ? `${dataUser.picture.replace(
+                                "/",
+                                "%2F"
+                              )}?alt=media`
+                            : dataUser.picture
+                        }`}
                         alt="user"
                         width="100px"
                         style={{
