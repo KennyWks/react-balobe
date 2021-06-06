@@ -6,11 +6,26 @@ import {
   Col,
   Card,
   Button,
-  Form,
+  Form as FormBootstrap,
   Modal,
 } from "react-bootstrap";
 import Spinner from "../../component/Spinner";
 import Alert from "../../component/Alert";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
+
+const updateProfilFormSchema = Yup.object().shape({
+  fullname: Yup.string().required("Fullname is required!"),
+  gender: Yup.string().required("Gender is required!"),
+  phone: Yup.string()
+    .required("Phone is required!")
+    .min(11, "Phone must be 11 characters at minimum!")
+    .max(12, "Phone must be 12 characters at maximum!"),
+  email: Yup.string()
+    .required("Email is required!")
+    .email("Invalid email address!"),
+  address: Yup.string().required("Address is required!"),
+});
 
 class Profil extends Component {
   constructor(props) {
@@ -34,8 +49,9 @@ class Profil extends Component {
     };
   }
 
-  componentDidUpdate() {
+  componentDidMount() {
     document.title = `My Profil - Balobe`;
+    this.getUser();
   }
 
   setModalChangeImageShow = (bool) => {
@@ -43,6 +59,8 @@ class Profil extends Component {
       ...prevState,
       setLgShow: bool,
       lgChangeImageShow: bool,
+      pathFile: "",
+      image: "",
     }));
   };
 
@@ -68,7 +86,15 @@ class Profil extends Component {
         },
       }));
     } catch (error) {
-      console.log(error);
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        } else {
+          alert(error.response.data.error.msg);
+        }
+      }
     }
     this.setState((prevState) => ({
       ...prevState,
@@ -76,15 +102,12 @@ class Profil extends Component {
     }));
   };
 
-  componentDidMount() {
-    this.getUser();
-  }
-
-  handleSubmit = async (e) => {
-    e.preventDefault();
+  handleSubmitChangeProfil = async () => {
     this.setState((prevState) => ({
       ...prevState,
       onSubmit: true,
+      message: "",
+      alert: "",
     }));
     try {
       const response = await patchData(
@@ -102,13 +125,25 @@ class Profil extends Component {
             email: "",
             phone: "",
           },
-          message: "Data is updated",
+          message: response.data.data.msg,
           alert: "success",
         }));
       }
       this.getUser();
     } catch (error) {
-      console.log(error);
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        } else {
+          this.setState((prevState) => ({
+            ...prevState,
+            message: error.response.data.error.msg,
+            alert: "danger",
+          }));
+        }
+      }
     }
     this.setState((prevState) => ({
       ...prevState,
@@ -119,58 +154,79 @@ class Profil extends Component {
 
   handleSubmitChangeImage = async (e) => {
     e.preventDefault();
-    this.setState((prevState) => ({
-      ...prevState,
-      onSubmit: true,
-    }));
-    try {
-      const response = await patchData(
-        `/profile/updateImageProfileBuyer`,
-        this.state.image
-      );
-      if (response.status === 200) {
+    if (this.state.image !== "") {
+      this.setState((prevState) => ({
+        ...prevState,
+        onSubmit: true,
+        message: "",
+        alert: "",
+      }));
+      try {
+        const response = await patchData(
+          `/profile/updateImageProfileBuyer`,
+          this.state.image
+        );
+        if (response.status === 200) {
+          this.setState((prevState) => ({
+            ...prevState,
+            image: "",
+            message: response.data.data.msg,
+            alert: "success",
+          }));
+        }
+      } catch (error) {
+        if (!error.response) {
+          alert("Server error! please try again.");
+        } else {
+          if (error.response.status === 500) {
+            alert("Something error! please try again.");
+          }
+        }
+      }
+      this.setState((prevState) => ({
+        ...prevState,
+        onSubmit: false,
+      }));
+      this.setModalChangeImageShow(false);
+      this.getUser();
+    } else {
+      alert("Please select a file");
+    }
+  };
+
+  handleImageChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      let imageFile = e.target.files[0];
+      if (
+        imageFile.type === "image/jpeg" ||
+        imageFile.type === "image/jpg" ||
+        imageFile.type === "image/png"
+      ) {
+        if (imageFile.size < 500000) {
+          let formData = new FormData();
+          formData.append("image", imageFile);
+
+          this.setState((prevState) => ({
+            ...prevState,
+            image: formData,
+            pathFile: URL.createObjectURL(imageFile),
+          }));
+        } else {
+          this.setState((prevState) => ({
+            ...prevState,
+            image: "",
+            pathFile: "",
+          }));
+          alert("Images is too large!");
+        }
+      } else {
         this.setState((prevState) => ({
           ...prevState,
           image: "",
-          message: "Your photo is change",
-          alert: "success",
+          pathFile: "",
         }));
+        alert("File not a images!");
       }
-    } catch (error) {
-      console.log(error);
-    }
-    this.setState((prevState) => ({
-      ...prevState,
-      onSubmit: false,
-    }));
-    this.setModalChangeImageShow(false);
-    this.getUser();
-  };
-
-  handleInput = (e) => {
-    const name = e.target.name;
-    const value = e.target.value;
-    this.setState((prevState) => ({
-      ...prevState,
-      form: {
-        ...prevState.form,
-        [name]: value,
-      },
-    }));
-  };
-
-  onImageChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      let imageFile = e.target.files[0];
-
-      let formData = new FormData();
-      formData.append("image", imageFile);
-
-      this.setState((prevState) => ({
-        ...prevState,
-        image: formData,
-        pathFile: URL.createObjectURL(imageFile),
-      }));
     }
   };
 
@@ -186,14 +242,26 @@ class Profil extends Component {
           <Row>
             <Col>
               <Card.Body>
-                {this.state.message && this.state.alert && (
-                  <Alert variant={this.state.alert} info={this.state.message} />
-                )}
-
                 {this.state.load && (
                   <div className="text-center my-2">
                     <Spinner class="text-center my-3" />
                   </div>
+                )}
+
+                {this.state.alert === "success" && (
+                  <Alert
+                    variant={this.state.alert}
+                    info={this.state.message}
+                    className="mt-2"
+                  />
+                )}
+
+                {this.state.alert === "danger" && (
+                  <Alert
+                    variant={this.state.alert}
+                    info={this.state.message}
+                    className="mt-2"
+                  />
                 )}
 
                 {Object.keys(dataUser).length > 0 && !this.state.load && (
@@ -222,74 +290,158 @@ class Profil extends Component {
                       <div>Hello! Take a look your profile below.</div>
                     </div>
 
-                    <Form onSubmit={this.handleSubmit}>
-                      <Form.Group controlId="name">
-                        <Form.Label>Full Name</Form.Label>
-                        <Form.Control
-                          type="text"
-                          name="fullname"
-                          placeholder="Enter Full Name"
-                          value={this.state.form.fullname}
-                          onChange={this.handleInput}
-                        />
-                      </Form.Group>
-                      <Form.Group controlId="gender">
-                        <Form.Label>Gender</Form.Label>
-                        <Form.Control
-                          as="select"
-                          name="gender"
-                          value={this.state.form.gender}
-                          onChange={this.handleInput}
-                        >
-                          <option>Male</option>
-                          <option>Female</option>
-                        </Form.Control>
-                      </Form.Group>
-                      <Form.Group controlId="email">
-                        <Form.Label>Phone Number</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="phone"
-                          placeholder="Enter your phone number"
-                          value={this.state.form.phone}
-                          onChange={this.handleInput}
-                        />
-                      </Form.Group>
-                      <Form.Group controlId="email">
-                        <Form.Label>Email address</Form.Label>
-                        <Form.Control
-                          type="email"
-                          name="email"
-                          placeholder="Enter your email"
-                          value={this.state.form.email}
-                          onChange={this.handleInput}
-                        />
-                      </Form.Group>
-                      <Form.Group controlId="address">
-                        <Form.Label>Address</Form.Label>
-                        <Form.Control
-                          as="textarea"
-                          name="address"
-                          rows={3}
-                          value={this.state.form.address}
-                          onChange={this.handleInput}
-                        />
-                      </Form.Group>
-                      <Button variant="primary" type="submit">
-                        {this.state.onSubmit && (
-                          <Spinner class="text-center my-0" />
-                        )}
-                        {!this.state.onSubmit && <span> Edit Data</span>}
-                      </Button>
-                      <Button
-                        className="mx-1"
-                        variant="success"
-                        type="button"
-                        onClick={() => this.setModalChangeImageShow(true)}
-                      >
-                        Edit Photo
-                      </Button>
-                    </Form>
+                    <Formik
+                      initialValues={this.state.form}
+                      enableReinitialize
+                      validationSchema={updateProfilFormSchema}
+                      onSubmit={(values, actions) => {
+                        this.setState((prevState) => ({
+                          ...prevState,
+                          form: {
+                            ...prevState.form,
+                            fullname: values.fullname,
+                            gender: values.gender,
+                            phone: values.phone,
+                            email: values.email,
+                            address: values.address,
+                          },
+                        }));
+
+                        setTimeout(() => {
+                          actions.setSubmitting(false);
+                          // actions.resetForm();
+                          this.handleSubmitChangeProfil();
+                        }, 1000);
+                      }}
+                    >
+                      {(props) => (
+                        <Form onSubmit={props.handleSubmit}>
+                          <FormBootstrap.Group controlId="fullname">
+                            <FormBootstrap.Label>Full Name</FormBootstrap.Label>
+                            <Field
+                              type="text"
+                              name="fullname"
+                              placeholder="Enter Full Name"
+                              value={props.values.fullname}
+                              className={`form-control ${
+                                props.errors.fullname ? `is-invalid` : ``
+                              }`}
+                            />
+                            <ErrorMessage
+                              component="div"
+                              name="fullname"
+                              className="invalid-feedback"
+                            />
+                          </FormBootstrap.Group>
+
+                          <FormBootstrap.Group controlId="gender">
+                            <Field
+                              name="gender"
+                              component="select"
+                              placeholder="Select Gender"
+                              className="form-control"
+                            >
+                              <option
+                                defaultValue={
+                                  props.values.gender === "Male"
+                                    ? "true"
+                                    : "false"
+                                }
+                                value="Male"
+                              >
+                                Male
+                              </option>
+                              <option
+                                defaultValue={
+                                  props.values.gender === "Female"
+                                    ? "true"
+                                    : "false"
+                                }
+                                value="Female"
+                              >
+                                Female
+                              </option>
+                            </Field>
+
+                            <ErrorMessage
+                              component="div"
+                              name="gender"
+                              className="invalid-feedback"
+                            />
+                          </FormBootstrap.Group>
+
+                          <FormBootstrap.Group controlId="phone">
+                            <FormBootstrap.Label>
+                              Phone Number
+                            </FormBootstrap.Label>
+                            <Field
+                              type="text"
+                              name="phone"
+                              placeholder="Enter your phone number"
+                              value={props.values.phone}
+                              className={`form-control ${
+                                props.errors.phone ? `is-invalid` : ``
+                              }`}
+                            />
+                            <ErrorMessage
+                              component="div"
+                              name="phone"
+                              className="invalid-feedback"
+                            />
+                          </FormBootstrap.Group>
+                          <FormBootstrap.Group controlId="email">
+                            <FormBootstrap.Label>
+                              Email address
+                            </FormBootstrap.Label>
+                            <Field
+                              type="email"
+                              name="email"
+                              placeholder="Enter your email"
+                              value={props.values.email}
+                              className={`form-control ${
+                                props.errors.email ? `is-invalid` : ``
+                              }`}
+                            />
+                            <ErrorMessage
+                              component="div"
+                              name="email"
+                              className="invalid-feedback"
+                            />
+                          </FormBootstrap.Group>
+                          <FormBootstrap.Group controlId="address">
+                            <FormBootstrap.Label>Address</FormBootstrap.Label>
+                            <Field
+                              as="textarea"
+                              name="address"
+                              rows={3}
+                              value={props.values.address}
+                              className={`form-control ${
+                                props.errors.address ? `is-invalid` : ``
+                              }`}
+                            />
+                            <ErrorMessage
+                              component="div"
+                              name="address"
+                              className="invalid-feedback"
+                            />
+                          </FormBootstrap.Group>
+                          <Button variant="primary" type="submit">
+                            {this.state.onSubmit && (
+                              <Spinner class="text-center my-0" />
+                            )}
+                            {!this.state.onSubmit && <span> Edit Data</span>}
+                          </Button>
+                          <Button
+                            className="mx-1"
+                            variant="success"
+                            type="button"
+                            onClick={() => this.setModalChangeImageShow(true)}
+                          >
+                            Edit Photo
+                          </Button>
+                        </Form>
+                      )}
+                    </Formik>
                   </div>
                 )}
               </Card.Body>
@@ -298,39 +450,39 @@ class Profil extends Component {
         </Container>
 
         <Modal
-          size="lg"
           show={this.state.lgChangeImageShow}
           onHide={() => this.setModalChangeImageShow(false)}
           aria-labelledby="example-modal-sizes-title-lg"
+          size="md"
           animation={false}
         >
           <Modal.Header closeButton>
             <Modal.Title id="example-modal-sizes-title-lg">
-              Edit Your Photo
+              Edit Images Profile
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <Form onSubmit={this.handleSubmitChangeImage}>
-              <Form.Group controlId="exampleForm.ControlInput1">
-                <Form.File
-                  id="exampleFormControlFile1"
-                  label="Photo file"
+            <FormBootstrap onSubmit={this.handleSubmitChangeImage}>
+              <FormBootstrap.Group controlId="image">
+                <FormBootstrap.File
+                  id="image"
+                  label="Images file"
                   name="image"
-                  onChange={this.onImageChange}
+                  onChange={this.handleImageChange}
                 />
                 <img
                   width={64}
                   height={64}
                   className="mt-2"
                   src={this.state.pathFile}
-                  alt="update data"
+                  alt="preview foto upload"
                 />
-              </Form.Group>
+              </FormBootstrap.Group>
               <Button type="submit" className="btn btn-primary">
                 {!this.state.onSubmit && <span>Upload</span>}
                 {this.state.onSubmit && <Spinner class="text-center my-0" />}
               </Button>
-            </Form>
+            </FormBootstrap>
           </Modal.Body>
         </Modal>
       </div>

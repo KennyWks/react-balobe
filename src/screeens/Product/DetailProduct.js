@@ -47,8 +47,8 @@ class DetailProduct extends Component {
       formReview: {
         id_user: props.isLogin ? props.id_user : "",
         id_item: parseInt(this.props.match.params.id),
-        rating: "",
-        review: "",
+        rating: 1,
+        review: "-",
       },
       disabled: false,
     };

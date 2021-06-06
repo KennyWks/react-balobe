@@ -29,40 +29,6 @@ const updateProfilFormSchema = Yup.object().shape({
   address: Yup.string().required("Address is required!"),
 });
 
-// const UploadFileSchema = Yup.object().shape({
-//   file: Yup.mixed().required("You need to provide a file").test("fileSize", "The file is too large", (value) => {
-//     return value && value[0].sienter <= 2000000;
-// }).test("type", "Only the following formats are accepted: .jpeg, .jpg, .bmp, .pdf and .doc", (value) => {
-//   return value && (
-//       value[0].type === "image/jpeg" ||
-//       value[0].type === "image/bmp" ||
-//       value[0].type === "image/png" ||
-//       value[0].type === 'application/pdf' ||
-//       value[0].type === "application/msword"
-//   );
-// }),
-// });
-
-const uploadFileSchema = Yup.object().shape({
-  image: Yup.mixed()
-    .required("You need to provide a file")
-    .test("fileSize", "The file is too large", (value) => {
-      return value && value[0].sienter <= 1000000;
-    })
-    .test(
-      "type",
-      "Only the following formats are accepted: .jpeg, .jpg, .png",
-      (value) => {
-        return (
-          value &&
-          (value[0].type === "image/jpeg" ||
-            value[0].type === "image/png" ||
-            value[0].type === "image/png")
-        );
-      }
-    ),
-});
-
 class Home extends Component {
   constructor(props) {
     super(props);
@@ -218,60 +184,79 @@ class Home extends Component {
 
   handleSubmitChangeImage = async (e) => {
     e.preventDefault();
-    this.setState((prevState) => ({
-      ...prevState,
-      onSubmit: true,
-      message: "",
-      alert: "",
-    }));
-    try {
-      const response = await patchData(
-        `/profile/updateImageProfileAdmin`,
-        this.state.image
-      );
-      if (response.status === 200) {
-        this.setState((prevState) => ({
-          ...prevState,
-          image: "",
-          message: response.data.data.msg,
-          alert: "success",
-        }));
+    if (this.state.image !== "") {
+      this.setState((prevState) => ({
+        ...prevState,
+        onSubmit: true,
+        message: "",
+        alert: "",
+      }));
+      try {
+        const response = await patchData(
+          `/profile/updateImageProfileAdmin`,
+          this.state.image
+        );
+        if (response.status === 200) {
+          this.setState((prevState) => ({
+            ...prevState,
+            image: "",
+            message: response.data.data.msg,
+            alert: "success",
+          }));
+        }
+      } catch (error) {
+        if (!error.response) {
+          alert("Server error! please try again.");
+        } else {
+          if (error.response.status === 500) {
+            alert("Something error! please try again.");
+          }
+        }
       }
-    } catch (error) {
-      if (!error.response) {
-        alert("Server error! please try again.");
-      } else {
-        if (error.response.status === 500) {
-          alert("Something error! please try again.");
+      this.setState((prevState) => ({
+        ...prevState,
+        onSubmit: false,
+      }));
+      this.handleCloseModalUpdatePicture();
+      this.getUser();
+    } else {
+      alert("Please select a file");
+    }
+  };
+
+  handleImageChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      let imageFile = e.target.files[0];
+      if (
+        imageFile.type === "image/jpeg" ||
+        imageFile.type === "image/jpg" ||
+        imageFile.type === "image/png"
+      ) {
+        if (imageFile.size < 500000) {
+          let formData = new FormData();
+          formData.append("image", imageFile);
+
+          this.setState((prevState) => ({
+            ...prevState,
+            image: formData,
+            pathFile: URL.createObjectURL(imageFile),
+          }));
         } else {
           this.setState((prevState) => ({
             ...prevState,
-            message: error.response.data.error.msg,
-            alert: "danger",
+            image: "",
+            pathFile: "",
           }));
+          alert("Images is too large!");
         }
+      } else {
+        this.setState((prevState) => ({
+          ...prevState,
+          image: "",
+          pathFile: "",
+        }));
+        alert("File not a images!");
       }
-    }
-    this.setState((prevState) => ({
-      ...prevState,
-      onSubmit: false,
-    }));
-    this.handleCloseModalUpdatePicture();
-    this.getUser();
-  };
-
-  onImageChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      let imageFile = e.target.files[0];
-
-      let formData = new FormData();
-      formData.append("image", imageFile);
-
-      this.setState((prevState) => ({
-        ...prevState,
-        image: formData,
-        pathFile: URL.createObjectURL(imageFile),
-      }));
     }
   };
 
@@ -385,7 +370,7 @@ class Home extends Component {
                           >
                             {(props) => (
                               <Form onSubmit={props.handleSubmit}>
-                                <FormBootstrap.Group controlId="name">
+                                <FormBootstrap.Group controlId="fullname">
                                   <FormBootstrap.Label>
                                     Full Name
                                   </FormBootstrap.Label>
@@ -405,7 +390,7 @@ class Home extends Component {
                                   />
                                 </FormBootstrap.Group>
 
-                                <FormBootstrap.Group controlId="gender.ControlInput4">
+                                <FormBootstrap.Group controlId="gender">
                                   <Field
                                     name="gender"
                                     component="select"
@@ -521,27 +506,26 @@ class Home extends Component {
                       >
                         <Modal.Header closeButton>
                           <Modal.Title id="example-modal-sizes-title-lg">
-                            Edit Your Photo
+                            Edit Images Profile
                           </Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
                           <FormBootstrap
                             onSubmit={this.handleSubmitChangeImage}
                           >
-                            <FormBootstrap.Group controlId="exampleForm.ControlInput1">
+                            <FormBootstrap.Group controlId="image">
                               <FormBootstrap.File
-                                id="exampleFormControlFile1"
-                                label="Photo file"
+                                id="image"
+                                label="Images file"
                                 name="image"
-                                onChange={this.onImageChange}
-                                required
+                                onChange={this.handleImageChange}
                               />
                               <img
                                 width={64}
                                 height={64}
                                 className="mt-2"
                                 src={this.state.pathFile}
-                                alt="path file"
+                                alt="preview foto upload"
                               />
                             </FormBootstrap.Group>
                             <Button type="submit" className="btn btn-primary">
