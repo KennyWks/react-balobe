@@ -101,9 +101,9 @@ class Signin extends Component {
     const accessToken = cookie.get("accessToken");
     const token = jwtDecode(accessToken);
     if (token.role_id === 2) {
-      return setTimeout(() => this.props.history.push("/admin"), 1000);
+      return setTimeout(() => this.props.history.push("/admin"), 900);
     } else {
-      return setTimeout(() => this.props.history.push("/"), 1000);
+      return setTimeout(() => this.props.history.push("/"), 900);
     }
   };
 
@@ -160,7 +160,7 @@ class Signin extends Component {
                   actions.setSubmitting(false);
                   // actions.resetForm();
                   this.handleSubmit();
-                }, 1000);
+                }, 900);
               }}
             >
               {(props) => (

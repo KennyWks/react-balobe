@@ -40,7 +40,7 @@ class Profil extends Component {
         phone: "",
       },
       dataUser: {},
-      load: false,
+      onLoad: false,
       onSubmit: false,
       message: "",
       alert: "",
@@ -67,7 +67,7 @@ class Profil extends Component {
   getUser = async () => {
     this.setState((prevState) => ({
       ...prevState,
-      load: true,
+      onLoad: true,
     }));
     try {
       const response = await getData(
@@ -98,7 +98,7 @@ class Profil extends Component {
     }
     this.setState((prevState) => ({
       ...prevState,
-      load: false,
+      onLoad: false,
     }));
   };
 
@@ -166,7 +166,7 @@ class Profil extends Component {
           `/profile/updateImageProfileBuyer`,
           this.state.image
         );
-        if (response.status === 200) {
+        if (response.status === 201) {
           this.setState((prevState) => ({
             ...prevState,
             image: "",
@@ -242,7 +242,7 @@ class Profil extends Component {
           <Row>
             <Col>
               <Card.Body>
-                {this.state.load && (
+                {this.state.onLoad && (
                   <div className="text-center my-2">
                     <Spinner class="text-center my-3" />
                   </div>
@@ -264,29 +264,9 @@ class Profil extends Component {
                   />
                 )}
 
-                {Object.keys(dataUser).length > 0 && !this.state.load && (
+                {Object.keys(dataUser).length > 0 && !this.state.onLoad && (
                   <div>
                     <div className="text-center">
-                      <img
-                        // src={`${url}/${dataUser.picture.replace(
-                        //   "/",
-                        //   "%2F"
-                        // )}?alt=media`}
-                        src={`${url}/${
-                          process.env.REACT_APP_ENVIROMENT === "production"
-                            ? `${dataUser.picture.replace(
-                                "/",
-                                "%2F"
-                              )}?alt=media`
-                            : dataUser.picture
-                        }`}
-                        alt="user"
-                        width="100px"
-                        style={{
-                          borderRadius: "3px",
-                        }}
-                      />
-
                       <div>Hello! Take a look your profile below.</div>
                     </div>
 
@@ -311,7 +291,7 @@ class Profil extends Component {
                           actions.setSubmitting(false);
                           // actions.resetForm();
                           this.handleSubmitChangeProfil();
-                        }, 1000);
+                        }, 900);
                       }}
                     >
                       {(props) => (
@@ -425,6 +405,28 @@ class Profil extends Component {
                               className="invalid-feedback"
                             />
                           </FormBootstrap.Group>
+                          <div className="m-3">
+                            <img
+                              // src={`${url}/${dataUser.picture.replace(
+                              //   "/",
+                              //   "%2F"
+                              // )}?alt=media`}
+                              src={`${url}/${
+                                process.env.REACT_APP_ENVIROMENT ===
+                                "production"
+                                  ? `${dataUser.picture.replace(
+                                      "/",
+                                      "%2F"
+                                    )}?alt=media`
+                                  : dataUser.picture
+                              }`}
+                              alt="user profile images"
+                              width="100px"
+                              style={{
+                                borderRadius: "3px",
+                              }}
+                            />
+                          </div>
                           <Button variant="primary" type="submit">
                             {this.state.onSubmit && (
                               <Spinner class="text-center my-0" />
@@ -475,7 +477,7 @@ class Profil extends Component {
                   height={64}
                   className="mt-2"
                   src={this.state.pathFile}
-                  alt="preview foto upload"
+                  alt="images upload preview"
                 />
               </FormBootstrap.Group>
               <Button type="submit" className="btn btn-primary">

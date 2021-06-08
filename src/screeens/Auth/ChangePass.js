@@ -31,7 +31,7 @@ class ChangePassword extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      onLoad: undefined,
+      onLoad: false,
       message: "",
       alert: "",
       url: "",
@@ -144,8 +144,20 @@ class ChangePassword extends Component {
 
             {this.state.onLoad && <Spinner class="text-center my-3" />}
 
-            {!this.state.onLoad && (
-              <Alert variant={this.state.alert} info={this.state.message} />
+            {this.state.alert === "success" && (
+              <Alert
+                variant={this.state.alert}
+                info={this.state.message}
+                className="mt-2"
+              />
+            )}
+
+            {this.state.alert === "danger" && (
+              <Alert
+                variant={this.state.alert}
+                info={this.state.message}
+                className="mt-2"
+              />
             )}
 
             {this.state.url !== "" && (
@@ -164,6 +176,7 @@ class ChangePassword extends Component {
                   this.setState((prevState) => ({
                     ...prevState,
                     form: {
+                      ...prevState.form,
                       password: values.password,
                     },
                   }));
@@ -172,7 +185,7 @@ class ChangePassword extends Component {
                     actions.setSubmitting(false);
                     // actions.resetForm();
                     this.handleSubmit();
-                  }, 1000);
+                  }, 900);
                 }}
               >
                 {(props) => (

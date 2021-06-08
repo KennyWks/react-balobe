@@ -408,7 +408,7 @@ class Role extends Component {
                       actions.setSubmitting(false);
                       // actions.resetForm();
                       this.handleAddRole();
-                    }, 1000);
+                    }, 900);
                   }}
                 >
                   {(props) => (
@@ -472,7 +472,7 @@ class Role extends Component {
                       actions.setSubmitting(false);
                       // actions.resetForm();
                       this.handleUpdateRole();
-                    }, 1000);
+                    }, 900);
                   }}
                 >
                   {(props) => (

@@ -116,7 +116,7 @@ class ForgotPass extends Component {
                   actions.setSubmitting(false);
                   // actions.resetForm();
                   this.handleSubmit();
-                }, 1000);
+                }, 900);
               }}
             >
               {(props) => (
@@ -151,7 +151,8 @@ class ForgotPass extends Component {
             </Formik>
             <div className="text-center">
               <h6 className="my-3">
-                Back to <Link to={`/signin`}>Login</Link> or <Link to={`/signup`}>Register</Link>
+                Back to <Link to={`/signin`}>Login</Link> or{" "}
+                <Link to={`/signup`}>Register</Link>
               </h6>
             </div>
           </Col>

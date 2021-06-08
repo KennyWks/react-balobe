@@ -420,7 +420,7 @@ class Category extends Component {
                       actions.setSubmitting(false);
                       // actions.resetForm();
                       this.handleAddCategory();
-                    }, 1000);
+                    }, 900);
                   }}
                 >
                   {(props) => (
@@ -501,7 +501,7 @@ class Category extends Component {
                       actions.setSubmitting(false);
                       // actions.resetForm();
                       this.handleUpdateCategory();
-                    }, 1000);
+                    }, 900);
                   }}
                 >
                   {(props) => (

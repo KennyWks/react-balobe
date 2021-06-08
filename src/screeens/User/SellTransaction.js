@@ -16,7 +16,15 @@ const SellTransaction = (props) => {
         setData(response.data.data);
       }
     } catch (error) {
-      console.log(error);
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        } else {
+          alert(`${error.response.data.data.msg}`);
+        }
+      }
     }
     setLoad(false);
   };
@@ -40,6 +48,10 @@ const SellTransaction = (props) => {
               <div className="text-center my-2">
                 <Spinner class="text-center my-3" />
               </div>
+            )}
+
+            {!onLoad && !data.length > 0 && (
+              <div className="text-center">Data transaction is empty.</div>
             )}
 
             {!onLoad &&

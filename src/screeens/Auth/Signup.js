@@ -41,14 +41,14 @@ class Signup extends Component {
       form: {
         username: "",
         password: "",
-        role_id: "3",
+        role_id: 3,
         fullname: "",
         gender: "",
         picture: "img-users/default.png",
         address: "",
         email: "",
         phone: "",
-        balance: "0",
+        balance: 0,
       },
       onSubmit: false,
       message: "",
@@ -120,7 +120,7 @@ class Signup extends Component {
               </Link>
             </div>
 
-            <h5 className="text-center my-4">Register new account now</h5>
+            <h5 className="text-center my-2">Register new account now</h5>
 
             {!this.state.onSubmit && (
               <Alert variant={this.state.alert} info={this.state.message} />
@@ -148,7 +148,7 @@ class Signup extends Component {
                   actions.setSubmitting(false);
                   // actions.resetForm();
                   this.handleSubmit();
-                }, 1000);
+                }, 900);
               }}
             >
               {(props) => (
@@ -300,7 +300,10 @@ class Signup extends Component {
 
                   <div className="d-inline">
                     {!this.state.onSubmit && (
-                      <Button type="submit" className="btn btn-primary mr-3">
+                      <Button
+                        type="submit"
+                        className="btn btn-primary mr-3 mb-2"
+                      >
                         Submit
                       </Button>
                     )}

@@ -50,7 +50,7 @@ class DetailProduct extends Component {
         rating: 1,
         review: "-",
       },
-      disabled: false,
+      disabled: "false",
     };
   }
 
@@ -65,27 +65,35 @@ class DetailProduct extends Component {
       onLoad: true,
     }));
     try {
-      const response = await getData(`/item/${this.props.match.params.id}`);
-      const city = await getData(`/api/rajaongkir/city`);
-      if (response.status === 200) {
+      const responseItem = await getData(`/item/${this.props.match.params.id}`);
+      const responseCity = await getData(`/api/rajaongkir/city`);
+      if (responseItem.status === 200 && responseCity.status === 200) {
         this.setState((prevState) => ({
           ...prevState,
-          detailProduct: response.data.data,
-          city: city.data.data.rajaongkir.results,
+          detailProduct: responseItem.data.data,
+          city: responseCity.data.data.rajaongkir.results,
         }));
-        await this.setOriginAndWeight();
+        await this.handleSetOriginWeight();
       }
       const responseReview = await getData(
         `/item/review/item/${this.props.match.params.id}`
       );
-      if (responseReview) {
+      if (responseReview.status === 200) {
         this.setState((prevState) => ({
           ...prevState,
           review: responseReview.data.data,
         }));
       }
     } catch (error) {
-      console.log(error);
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        } else {
+          alert(`${error.response.data.data.msg}`);
+        }
+      }
     }
     this.setState((prevState) => ({
       ...prevState,
@@ -93,7 +101,7 @@ class DetailProduct extends Component {
     }));
   };
 
-  setOriginAndWeight = () => {
+  handleSetOriginWeight = () => {
     this.setState((prevState) => ({
       ...prevState,
       formSend: {
@@ -104,7 +112,7 @@ class DetailProduct extends Component {
     }));
   };
 
-  star = (rating) => {
+  handleStarRating = (rating) => {
     let star = [];
     for (let i = 0; i < rating; i++) {
       star.push(<BsStarFill key={i} />);
@@ -155,14 +163,20 @@ class DetailProduct extends Component {
         `/api/rajaongkir/cost`,
         this.state.formSend
       );
-      if (response) {
+      if (response.status === 200) {
         this.setState((prevState) => ({
           ...prevState,
           resultCourier: response.data.data.rajaongkir.results,
         }));
       }
     } catch (error) {
-      console.log(error);
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        }
+      }
     }
     this.setState((prevState) => ({
       ...prevState,
@@ -183,12 +197,20 @@ class DetailProduct extends Component {
   };
 
   handleInputOrder = (e) => {
+    this.setState((prevState) => ({
+      ...prevState,
+      carts: {
+        ...prevState.carts,
+        courier: 0,
+      },
+    }));
+
     const name = e.target.name;
     const value = e.target.value;
     if (value > this.state.detailProduct.quantity || value < 1) {
       this.setState((prevState) => ({
         ...prevState,
-        disabled: true,
+        disabled: "true",
       }));
     } else {
       this.setState((prevState) => ({
@@ -209,7 +231,7 @@ class DetailProduct extends Component {
     }
   };
 
-  setCartsState = () => {
+  handleSetCartsState = () => {
     this.setState((prevState) => ({
       ...prevState,
       carts: {
@@ -232,9 +254,9 @@ class DetailProduct extends Component {
     }));
     if (this.props.isLogin) {
       if (this.state.carts.courier !== 0) {
-        await this.setCartsState();
+        await this.handleSetCartsState();
         try {
-          await postData(`/carts`, this.state.carts);
+          const response = await postData(`/carts`, this.state.carts);
           // console.log(response)
           this.setState((prevState) => ({
             ...prevState,
@@ -247,13 +269,21 @@ class DetailProduct extends Component {
           if (buyBtn === true) {
             this.props.history.push("/carts");
           } else {
-            alert("Item added to carts!");
+            alert(`${response.data.data.msg}`);
           }
         } catch (error) {
-          console.log(error);
+          if (!error.response) {
+            alert("Server error! please try again.");
+          } else {
+            if (error.response.status === 500) {
+              alert("Something error! please try again.");
+            } else {
+              alert(`${error.response.data.data.msg}`);
+            }
+          }
         }
       } else {
-        alert("Please select your courier");
+        alert("Please select your courier services");
       }
     } else {
       alert("Please login before continue the process");
@@ -276,7 +306,7 @@ class DetailProduct extends Component {
     }));
   };
 
-  ratingChanged = (newRating) => {
+  handleRatingChange = (newRating) => {
     this.setState((prevState) => ({
       ...prevState,
       formReview: {
@@ -291,36 +321,37 @@ class DetailProduct extends Component {
     this.setState((prevState) => ({
       ...prevState,
       onLoad: true,
-      alert: "",
     }));
     try {
       const response = await postData(`/item/review`, this.state.formReview);
       // console.log(response);
-      if (response.status === 200) {
+      if (response.status === 201) {
         this.setState((prevState) => ({
           ...prevState,
           formReview: {
             ...prevState.formReview,
-            rating: "",
-            review: "",
+            rating: 1,
+            review: "-",
           },
-          message: "Your comment is added!",
-          alert: "success",
         }));
-      } else {
-        this.setState((prevState) => ({
-          ...prevState,
-          message: "Your comment isn't added!",
-          alert: "danger",
-        }));
+        alert(`${response.data.data.msg}`);
       }
     } catch (error) {
-      console.log(error);
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        } else {
+          alert(`${error.response.data.data.msg}`);
+        }
+      }
     }
     this.setState((prevState) => ({
       ...prevState,
       onLoad: false,
     }));
+    this.getDetailProduct();
   };
 
   setCityofUser = (city) => {
@@ -352,14 +383,16 @@ class DetailProduct extends Component {
                       <div className="row no-gutters">
                         <div className="col-md-4">
                           <img
-                          
                             // src={`${url}/${detailProduct.image.replace(
                             //   "/",
                             //   "%2F"
                             // )}?alt=media`}
                             src={`${url}/${
                               process.env.REACT_APP_ENVIROMENT === "production"
-                                ? `${detailProduct.image.replace("/", "%2F")}?alt=media`
+                                ? `${detailProduct.image.replace(
+                                    "/",
+                                    "%2F"
+                                  )}?alt=media`
                                 : detailProduct.image
                             }`}
                             className="card-img"
@@ -460,11 +493,10 @@ class DetailProduct extends Component {
                                         name="courier"
                                         value={this.state.formSend.courier}
                                         onChange={this.handleInputCourier}
-                                        onFocus={this.handleInputCourier}
                                       >
                                         <option defaultValue>
                                           Select courier
-                                        </option>{" "}
+                                        </option>
                                         <option value="jne">JNE</option>
                                         <option value="tiki">TIKI</option>
                                         <option value="pos">
@@ -483,7 +515,7 @@ class DetailProduct extends Component {
                                   <Spinner class="text-center my-3" />
                                 )}
 
-                                {!onCheck && resultCourier.length < 1 && (
+                                {!onCheck && !resultCourier.length > 0 && (
                                   <div
                                     style={{
                                       textAlign: "center",
@@ -544,7 +576,7 @@ class DetailProduct extends Component {
 
                               <Row>
                                 <Col md={2}>
-                                  <span>Pesan</span>
+                                  <span>Order</span>
                                 </Col>
                                 <Col md={2}>
                                   <Form.Group controlId="total_item">
@@ -682,10 +714,10 @@ class DetailProduct extends Component {
             )}
 
             {!(Object.keys(detailProduct).length > 0) && (
-              <p style={{ textAlign: "center" }}>Data is empty</p>
+              <p style={{ textAlign: "center" }}>Items is empty</p>
             )}
 
-            {this.props.isLogin && (
+            {this.props.isLogin && Object.keys(detailProduct).length > 0 && (
               <Container>
                 <ColoredLine margin="10px" color="#F8F9FA" />
                 <Card>
@@ -712,14 +744,14 @@ class DetailProduct extends Component {
                               </Form.Group>
                               <ReactStars
                                 count={5}
-                                onChange={this.ratingChanged}
+                                onChange={this.handleRatingChange}
                                 size={24}
                                 activeColor="#ffd700"
                               />
                               <Button
                                 variant="primary"
                                 type="submit"
-                                name="send"
+                                name="Send"
                                 className="send-btn"
                               />
                             </Form>
@@ -769,7 +801,7 @@ class DetailProduct extends Component {
                                   <Media.Body>
                                     <h5>{v.username}</h5>
                                     <div style={{ color: "yellow" }}>
-                                      {this.star(v.rating)}
+                                      {this.handleStarRating(v.rating)}
                                     </div>
                                     <p className="text-muted">
                                       Writed at{" "}

@@ -196,7 +196,7 @@ class Home extends Component {
           `/profile/updateImageProfileAdmin`,
           this.state.image
         );
-        if (response.status === 200) {
+        if (response.status === 201) {
           this.setState((prevState) => ({
             ...prevState,
             image: "",
@@ -365,7 +365,7 @@ class Home extends Component {
                                 actions.setSubmitting(false);
                                 // actions.resetForm();
                                 this.handleSubmitChangeProfil();
-                              }, 1000);
+                              }, 900);
                             }}
                           >
                             {(props) => (
@@ -525,7 +525,7 @@ class Home extends Component {
                                 height={64}
                                 className="mt-2"
                                 src={this.state.pathFile}
-                                alt="preview foto upload"
+                                alt="images upload preview"
                               />
                             </FormBootstrap.Group>
                             <Button type="submit" className="btn btn-primary">

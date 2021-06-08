@@ -15,7 +15,13 @@ const BuyTransaction = () => {
         setData(response.data.data);
       }
     } catch (error) {
-      console.log(error);
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        }
+      }
     }
     setLoad(false);
   };

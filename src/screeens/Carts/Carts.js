@@ -1,7 +1,8 @@
 import React, { Component } from "react";
 import { Container, Row, Col, Media, Button, Form } from "react-bootstrap";
-import { getData, postData, patchData } from "../../helpers/CRUD";
+import { getData, postData, patchData, deleteData } from "../../helpers/CRUD";
 import Spinner from "../../component/Spinner";
+import Alert from "../../component/Alert";
 
 class Carts extends Component {
   constructor(props) {
@@ -27,15 +28,16 @@ class Carts extends Component {
       checked: false,
       onLoad: false,
       message: "",
+      alert: "",
     };
   }
 
   componentDidMount() {
     document.title = `Carts - Balobe`;
-    this.getDataCarts();
+    this.getCarts();
   }
 
-  getDataCarts = async () => {
+  getCarts = async () => {
     this.setState((prevState) => ({
       ...prevState,
       onLoad: true,
@@ -49,12 +51,102 @@ class Carts extends Component {
         }));
       }
     } catch (error) {
-      console.log(error);
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        }
+      }
     }
     this.setState((prevState) => ({
       ...prevState,
       onLoad: false,
     }));
+  };
+
+  reduceOrder = async (e) => {
+    const dataTotalItem = e.target.dataset["total_item"];
+    const dataPrice = e.target.dataset["price"];
+
+    const total_item = parseInt(dataTotalItem) - 1;
+
+    if (total_item > 0) {
+      this.setState((prevState) => ({
+        ...prevState,
+        order: {
+          ...prevState.order,
+          total_item: total_item,
+          total_price: total_item * parseInt(dataPrice),
+        },
+      }));
+      const idCart = parseInt(e.target.dataset["id_carts"]);
+      await this.updateCarts(idCart);
+    } else {
+      alert("Your order can't be zero");
+    }
+  };
+
+  addOrder = async (e) => {
+    const dataTotalItem = e.target.dataset["total_item"];
+    const dataPrice = e.target.dataset["price"];
+
+    const dataQuantity = e.target.dataset["quantity"];
+
+    const total_item = parseInt(dataTotalItem) + 1;
+
+    if (total_item < parseInt(dataQuantity)) {
+      this.setState((prevState) => ({
+        ...prevState,
+        order: {
+          ...prevState.order,
+          total_item: total_item,
+          total_price: total_item * parseInt(dataPrice),
+        },
+      }));
+      const idCart = parseInt(e.target.dataset["id_carts"]);
+      await this.updateCarts(idCart);
+    } else {
+      alert("Your order can't greater quantity");
+    }
+  };
+
+  updateCarts = async (id_carts) => {
+    this.setState((prevState) => ({
+      ...prevState,
+      onLoad: true,
+    }));
+    try {
+      const response = await patchData(
+        `/carts/update/${id_carts}`,
+        this.state.order
+      );
+      console.log(response);
+      this.setState((prevState) => ({
+        ...prevState,
+        message: response.data.data.msg,
+        alert: "success",
+      }));
+    } catch (error) {
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        } else {
+          this.setState((prevState) => ({
+            ...prevState,
+            message: error.response.data.error.msg,
+            alert: "danger",
+          }));
+        }
+      }
+    }
+    this.setState((prevState) => ({
+      ...prevState,
+      onLoad: false,
+    }));
+    this.getCarts();
   };
 
   onToggle = async () => {
@@ -91,16 +183,9 @@ class Carts extends Component {
     await this.setStateCartsChecked(checkedArr, arrayId);
   };
 
-  setStateCartsChecked = (checkedArr, arrayId, msg = null) => {
+  setStateCartsChecked = (checkedArr, arrayId) => {
     this.setState({ cartsChecked: checkedArr });
     this.setState({ arrayId: arrayId });
-
-    if (msg !== null) {
-      this.setState((prevState) => ({
-        ...prevState,
-        message: msg,
-      }));
-    }
   };
 
   handleSubmitCartsChecked = async () => {
@@ -109,141 +194,52 @@ class Carts extends Component {
       onLoad: true,
     }));
     try {
-      const responseCheckout = await patchData(
-        `/carts/checkout/checked`,
-        this.state.arrayId
-      );
       const responseTransaction = await postData(
         `/transaction`,
         this.state.cartsChecked
       );
-      if (responseCheckout.status === 200 && responseTransaction) {
-        await this.setStateCartsChecked(null, null, responseTransaction.msg);
-      }
-    } catch (error) {}
-    this.setState((prevState) => ({
-      ...prevState,
-      onLoad: true,
-    }));
-    this.getDataCarts();
-  };
-
-  reduceOrder = (e) => {
-    e.preventDefault();
-    const dataTotalItem = parseInt(e.target.dataset["total_item"]);
-    const dataPrice = parseInt(e.target.dataset["price"]);
-
-    const total_item = dataTotalItem - 1;
-    const total_price = total_item * dataPrice;
-
-    if (total_item < 1) {
-      this.setState((prevState) => ({
-        ...prevState,
-        message: "Your order is empty",
-      }));
-    } else {
-      this.setState((prevState) => ({
-        ...prevState,
-        order: {
-          ...prevState.order,
-          total_item: total_item,
-          total_price: total_price,
-        },
-      }));
-    }
-
-    const idCart = parseInt(e.target.dataset["id_carts"]);
-    this.updateCarts(idCart);
-  };
-
-  addOrder = (e) => {
-    e.preventDefault();
-    const dataTotalItem = parseInt(e.target.dataset["total_item"]);
-    const dataPrice = parseInt(e.target.dataset["price"]);
-    const dataQuantity = parseInt(e.target.dataset["quantity"]);
-
-    const total_item = dataTotalItem + 1;
-    const total_price = total_item * dataPrice;
-
-    if (total_item > dataQuantity) {
-      this.setState((prevState) => ({
-        ...prevState,
-        message: "Your order is greater quantity",
-      }));
-    } else {
-      this.setState((prevState) => ({
-        ...prevState,
-        order: {
-          ...prevState.order,
-          total_item: total_item,
-          total_price: total_price,
-        },
-      }));
-    }
-
-    const idCart = parseInt(e.target.dataset["id_carts"]);
-    this.updateCarts(idCart);
-  };
-
-  updateCarts = async (id_carts) => {
-    this.setState((prevState) => ({
-      ...prevState,
-      onLoad: true,
-    }));
-    try {
-      const response = await patchData(
-        `/carts/update/${id_carts}`,
-        this.state.order
+      const responseCheckout = await patchData(
+        `/carts/checkout/checked`,
+        this.state.arrayId
       );
-      if (response.status === 200) {
-        this.setState((prevState) => ({
-          ...prevState,
-          order: {
-            total_item: 0,
-            total_price: 0,
-          },
-        }));
-      }
+      await this.setStateCartsChecked(null, null);
+      this.setState((prevState) => ({
+        ...prevState,
+        message: responseCheckout.data.data.msg,
+        alert: "success",
+      }));
     } catch (error) {
-      console.log(error);
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        } else {
+          this.setState((prevState) => ({
+            ...prevState,
+            message: error.response.data.error.msg,
+            alert: "danger",
+          }));
+        }
+      }
     }
-    this.getDataCarts();
-  };
-
-  setCheckOutCarts = (
-    id_pelapak,
-    list_item,
-    total_item,
-    courier,
-    total_price
-  ) => {
     this.setState((prevState) => ({
       ...prevState,
-      cartsOrder: {
-        ...prevState.cartsOrder,
-        id_pelapak: id_pelapak,
-        list_item: list_item,
-        total_item: total_item,
-        courier: courier,
-        total_price: total_price,
-      },
+      onLoad: true,
     }));
+    this.getCarts();
   };
 
   checkOutCarts = async (e) => {
-    e.preventDefault();
     this.setState((prevState) => ({
       ...prevState,
       onLoad: true,
     }));
 
     const id_pelapak = e.target.dataset["id_pelapak"];
-
     const list_item = e.target.dataset["list_item"];
     const total_item = e.target.dataset["total_item"];
-
     const courier = e.target.dataset["courier"];
-
     const total_price = e.target.dataset["total_price"];
     const id_carts = e.target.dataset["id_carts"];
 
@@ -269,17 +265,86 @@ class Carts extends Component {
             total_item: 0,
             total_price: 0,
           },
-          message: response.msg,
+          message: response.data.data.msg,
+          alert: "success",
         }));
       }
     } catch (error) {
-      console.log(error);
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        } else {
+          this.setState((prevState) => ({
+            ...prevState,
+            message: error.response.data.error.msg,
+            alert: "danger",
+          }));
+        }
+      }
     }
-    this.getDataCarts();
+    this.getCarts();
+  };
+
+  setCheckOutCarts = (
+    id_pelapak,
+    list_item,
+    total_item,
+    courier,
+    total_price
+  ) => {
+    this.setState((prevState) => ({
+      ...prevState,
+      cartsOrder: {
+        ...prevState.cartsOrder,
+        id_pelapak: id_pelapak,
+        list_item: list_item,
+        total_item: total_item,
+        courier: courier,
+        total_price: total_price,
+      },
+    }));
+  };
+
+  removeCart = async (id_carts) => {
+    this.setState((prevState) => ({
+      ...prevState,
+      onLoad: true,
+    }));
+    try {
+      const response = await deleteData(`/carts/${id_carts}`);
+      if (response.status === 200) {
+        this.setState((prevState) => ({
+          ...prevState,
+          message: response.data.data.msg,
+          alert: "success",
+        }));
+      }
+    } catch (error) {
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        } else {
+          this.setState((prevState) => ({
+            ...prevState,
+            message: error.response.data.error.msg,
+            alert: "danger",
+          }));
+        }
+      }
+    }
+    this.setState((prevState) => ({
+      ...prevState,
+      onLoad: true,
+    }));
+    this.getCarts();
   };
 
   render() {
-    const { listCarts, onLoad, message } = this.state;
+    const { listCarts, onLoad } = this.state;
     const url =
       process.env.REACT_APP_ENVIROMENT === "production"
         ? process.env.REACT_APP_URL_IMAGES_PRODUCTION
@@ -290,11 +355,24 @@ class Carts extends Component {
           <h3>Your carts list</h3>
         </div>
 
-        <div>{message}</div>
+        {this.state.alert === "success" && (
+          <Alert
+            variant={this.state.alert}
+            info={this.state.message}
+            className="mt-2"
+          />
+        )}
 
+        {this.state.alert === "danger" && (
+          <Alert
+            variant={this.state.alert}
+            info={this.state.message}
+            className="mt-2"
+          />
+        )}
         {onLoad && <Spinner class="text-center my-3" />}
 
-        {listCarts.length < 1 && (
+        {!listCarts.length > 0 && !onLoad && (
           <div className="text-center">Your Carts Empty</div>
         )}
 
@@ -308,7 +386,7 @@ class Carts extends Component {
                 style={{ transform: "scale(1.5)" }}
               />
               &nbsp;
-              <label> Check All</label>
+              <label>Check All</label>
             </div>
 
             {listCarts.length > 0 &&
@@ -440,10 +518,10 @@ class Carts extends Component {
                           <Button
                             style={{
                               position: "absolute",
-                              right: "60px",
-                              top: "200px",
+                              right: "40px",
+                              top: "160px",
                             }}
-                            variant="danger"
+                            variant="success"
                             onClick={this.checkOutCarts}
                             data-id_carts={v.id}
                             data-id_pelapak={v.id_pelapak}
@@ -454,6 +532,25 @@ class Carts extends Component {
                           >
                             Pay
                           </Button>
+                          <Button
+                            style={{
+                              position: "absolute",
+                              right: "110px",
+                              top: "160px",
+                            }}
+                            variant="danger"
+                            onClick={() => {
+                              if (
+                                window.confirm(
+                                  "Are you sure to remove this data?"
+                                )
+                              ) {
+                                this.removeCart(v.id);
+                              }
+                            }}
+                          >
+                            Cancel
+                          </Button>
                         </Media.Body>
                       </Media>
                     </ul>
@@ -463,7 +560,7 @@ class Carts extends Component {
             <Row className="m-2">
               <Col>
                 <Button
-                  variant="danger"
+                  variant="success"
                   onClick={this.handleSubmitCartsChecked}
                 >
                   Pay Checked

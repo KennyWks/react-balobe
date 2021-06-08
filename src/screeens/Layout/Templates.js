@@ -52,9 +52,7 @@ class Header extends Component {
           carts: responseCarts.data,
         }));
       }
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (error) {}
   };
 
   getCategory = async () => {
@@ -68,7 +66,13 @@ class Header extends Component {
         }));
       }
     } catch (error) {
-      console.log(error);
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        }
+      }
     }
   };
 

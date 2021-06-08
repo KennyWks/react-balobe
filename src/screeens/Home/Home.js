@@ -43,7 +43,13 @@ class Home extends Component {
         },
       }));
     } catch (error) {
-      console.log(error);
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        }
+      }
     }
     this.setState((prevState) => ({
       ...prevState,
@@ -99,12 +105,12 @@ class Home extends Component {
     this.getProduct(`?page=${counter}&limit=5`);
   };
 
-  star = (rating) => {
-    let star = [];
+  handleStarRating = (rating) => {
+    let handleStarRating = [];
     for (let i = 0; i < rating; i++) {
-      star.push(<BsStarFill key={i} />);
+      handleStarRating.push(<BsStarFill key={i} />);
     }
-    return star;
+    return handleStarRating;
   };
 
   paginationItem = () => {
@@ -187,7 +193,7 @@ class Home extends Component {
                               "Not Rating"
                             ) : (
                               <div style={{ color: "yellow" }}>
-                                {this.star(v.rating)}
+                                {this.handleStarRating(v.rating)}
                               </div>
                             )}
                           </small>

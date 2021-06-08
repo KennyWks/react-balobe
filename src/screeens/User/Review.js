@@ -14,6 +14,7 @@ import { BsStarFill } from "react-icons/bs";
 import ReactStars from "react-rating-stars-component";
 import user from "../../assets/img/user.JPG";
 import Spinner from "../../component/Spinner";
+import Alert from "../../component/Alert";
 import "../../assets/css/style.css";
 // import "../../assets/js/script.js";
 
@@ -25,7 +26,7 @@ class Review extends Component {
         data: [],
         metadata: {},
       },
-      load: false,
+      onLoad: false,
       show: false,
       onLoadForm: false,
       message: "",
@@ -33,8 +34,8 @@ class Review extends Component {
       onSubmit: "",
       form: {
         id: "",
-        review: "",
-        rating: "",
+        review: "-",
+        rating: 0,
       },
     };
   }
@@ -47,7 +48,7 @@ class Review extends Component {
   getReview = async () => {
     this.setState((prevState) => ({
       ...prevState,
-      load: true,
+      onLoad: true,
     }));
     try {
       const response = await getData(`/item/review/user`);
@@ -56,15 +57,21 @@ class Review extends Component {
         dataReview: response.data,
       }));
     } catch (error) {
-      console.log(error);
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        }
+      }
     }
     this.setState((prevState) => ({
       ...prevState,
-      load: false,
+      onLoad: false,
     }));
   };
 
-  star = (rating) => {
+  handleStarRating = (rating) => {
     let star = [];
     for (let i = 0; i < rating; i++) {
       star.push(<BsStarFill key={i} />);
@@ -89,7 +96,15 @@ class Review extends Component {
         },
       }));
     } catch (error) {
-      console.log(error);
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        } else {
+          alert(error.response.data.error.msg);
+        }
+      }
     }
     this.setState((prevState) => ({
       ...prevState,
@@ -120,7 +135,7 @@ class Review extends Component {
     }));
   };
 
-  ratingChanged = (newRating) => {
+  handleRatingChanged = (newRating) => {
     this.setState((prevState) => ({
       ...prevState,
       form: {
@@ -135,6 +150,7 @@ class Review extends Component {
     this.setState((prevState) => ({
       ...prevState,
       onSubmit: true,
+      message: "",
       alert: "",
     }));
     try {
@@ -150,20 +166,26 @@ class Review extends Component {
             review: "",
             rating: "",
           },
-          message: "Your comment is updated!",
+          message: response.data.data.msg,
           alert: "success",
-        }));
-      } else {
-        this.setState((prevState) => ({
-          ...prevState,
-          message: "Your comment isn't updated!",
-          alert: "danger",
         }));
       }
       this.getReview();
       this.handleClose();
     } catch (error) {
-      console.log(error);
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        } else {
+          this.setState((prevState) => ({
+            ...prevState,
+            message: error.response.data.error.msg,
+            alert: "danger",
+          }));
+        }
+      }
     }
     this.setState((prevState) => ({
       ...prevState,
@@ -178,13 +200,29 @@ class Review extends Component {
         <Row>
           <Col>
             <Card.Body>
-              {this.state.load && (
+              {this.state.onLoad && (
                 <div className="text-center my-2">
                   <Spinner class="text-center my-3" />
                 </div>
               )}
 
-              {!this.state.load &&
+              {this.state.alert === "success" && (
+                <Alert
+                  variant={this.state.alert}
+                  info={this.state.message}
+                  className="mt-2"
+                />
+              )}
+
+              {this.state.alert === "danger" && (
+                <Alert
+                  variant={this.state.alert}
+                  info={this.state.message}
+                  className="mt-2"
+                />
+              )}
+
+              {!this.state.onLoad &&
                 dataReview.data.length > 0 &&
                 dataReview.data.map((v, i) => (
                   <ul className="list-unstyled" key={i}>
@@ -198,7 +236,7 @@ class Review extends Component {
                       />
                       <Media.Body>
                         <h5 style={{ color: "yellow" }}>
-                          {this.star(v.rating)}
+                          {this.handleStarRating(v.rating)}
                         </h5>
                         <p>{v.review}</p>
                       </Media.Body>
@@ -234,7 +272,7 @@ class Review extends Component {
                             </Form.Group>
                             <ReactStars
                               count={5}
-                              onChange={this.ratingChanged}
+                              onChange={this.handleRatingChanged}
                               size={24}
                               activeColor="#ffd700"
                             />
