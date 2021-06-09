@@ -7,7 +7,7 @@ import { Footer } from "../Layout/Templates";
 import Header from "../Layout/Templates";
 import bodyProduct from "../../assets/css/styleCustom.module.css";
 import Spinner from "../../component/Spinner";
-// import Cards from "../../component/Cards";
+import Cards from "../../component/Cards";
 
 class Home extends Component {
   constructor(props) {
@@ -62,7 +62,7 @@ class Home extends Component {
       ...prevState,
       page: 1,
     }));
-    this.getProduct(`?page=1&limit=5`);
+    this.getProduct(`?page=1&limit=8`);
   };
 
   handleLastPage = () => {
@@ -71,7 +71,7 @@ class Home extends Component {
       ...prevState,
       page: totalPage,
     }));
-    this.getProduct(`?page=${totalPage}&limit=5`);
+    this.getProduct(`?page=${totalPage}&limit=8`);
   };
 
   handlePrev = () => {
@@ -80,7 +80,7 @@ class Home extends Component {
       ...prevState,
       page: counter,
     }));
-    this.getProduct(`?page=${counter}&limit=5`);
+    this.getProduct(`?page=${counter}&limit=8`);
   };
 
   handleNext = () => {
@@ -92,17 +92,17 @@ class Home extends Component {
       ...prevState,
       page: counter,
     }));
-    this.getProduct(`?page=${counter}&limit=5`);
+    this.getProduct(`?page=${counter}&limit=8`);
   };
 
   handleEllipsis = () => {
     const { currentPage } = this.state.listProduct.metadata;
-    const counter = Math.floor(currentPage / 5);
+    const counter = Math.floor(currentPage / 8);
     this.setState((prevState) => ({
       ...prevState,
       page: counter,
     }));
-    this.getProduct(`?page=${counter}&limit=5`);
+    this.getProduct(`?page=${counter}&limit=8`);
   };
 
   handleStarRating = (rating) => {
@@ -115,7 +115,7 @@ class Home extends Component {
 
   paginationItem = () => {
     let pagination = [];
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 1; i <= 8; i++) {
       pagination.push(<Pagination.Item>{i}</Pagination.Item>);
     }
     return pagination;
@@ -131,8 +131,12 @@ class Home extends Component {
     return (
       <div>
         <Header />
-        {/* <Cards /> */}
+        <Cards />
         {onLoad && <Spinner class="text-center my-3" />}
+
+        {!onLoad && !data.length > 0 && (
+          <p className="text-center mt-5">Items is empty</p>
+        )}
 
         <Row className="mt-4 mx-2">
           {data.length > 0 &&
@@ -218,7 +222,7 @@ class Home extends Component {
                 </>
               )}
 
-              {metadata.currentPage - 1 >= 5 && (
+              {metadata.currentPage - 1 >= 8 && (
                 <>
                   <Pagination.Ellipsis onClick={this.handleEllipsis} />
                 </>
@@ -226,11 +230,11 @@ class Home extends Component {
 
               <Pagination.Item active>{metadata.currentPage}</Pagination.Item>
 
-              {metadata.totalPage - metadata.currentPage > 5 && (
+              {metadata.totalPage - metadata.currentPage > 8 && (
                 <>{this.paginationItem}</>
               )}
 
-              {metadata.totalPage - metadata.currentPage >= 5 && (
+              {metadata.totalPage - metadata.currentPage >= 8 && (
                 <>
                   <Pagination.Ellipsis onClick={this.handleEllipsis} />
                 </>
