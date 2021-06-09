@@ -12,7 +12,6 @@ import {
 } from "react-bootstrap";
 import { BsStarFill } from "react-icons/bs";
 import ReactStars from "react-rating-stars-component";
-import user from "../../assets/img/user.JPG";
 import Spinner from "../../component/Spinner";
 import Alert from "../../component/Alert";
 import "../../assets/css/style.css";
@@ -52,6 +51,7 @@ class Review extends Component {
     }));
     try {
       const response = await getData(`/item/review/user`);
+      console.log(response);
       this.setState((prevState) => ({
         ...prevState,
         dataReview: response.data,
@@ -195,6 +195,10 @@ class Review extends Component {
 
   render() {
     const { dataReview } = this.state;
+    const url =
+      process.env.REACT_APP_ENVIROMENT === "production"
+        ? process.env.REACT_APP_URL_IMAGES_PRODUCTION
+        : process.env.REACT_APP_URL_IMAGES_DEVELOPMENT;
     return (
       <Container>
         <Row>
@@ -222,34 +226,58 @@ class Review extends Component {
                 />
               )}
 
+              {!this.state.onLoad && !dataReview.data.length > 0 && (
+                <p style={{ textAlign: "center" }}>Review's is empty</p>
+              )}
+
               {!this.state.onLoad &&
                 dataReview.data.length > 0 &&
                 dataReview.data.map((v, i) => (
                   <ul className="list-unstyled" key={i}>
                     <Media as="li">
                       <img
-                        width={64}
-                        height={64}
+                        width={70}
+                        height={70}
                         className="mr-3 rounded-circle"
-                        src={user}
+                        // src={`${url}/${v.image.replace(
+                        //   "/",
+                        //   "%2F"
+                        // )}?alt=media`}
+                        src={`${url}/${
+                          process.env.REACT_APP_ENVIROMENT === "production"
+                            ? `${v.image.replace("/", "%2F")}?alt=media`
+                            : v.image
+                        }`}
                         alt="icon user"
                       />
                       <Media.Body>
-                        <h5 style={{ color: "yellow" }}>
-                          {this.handleStarRating(v.rating)}
-                        </h5>
-                        <p>{v.review}</p>
+                        <h5>{v.name_item}</h5>
+                        <small className="text-muted my-0">
+                          {v.name_pelapak}
+                        </small>
+                        <Row>
+                          <Col md={10}>
+                            <h5 style={{ color: "yellow" }}>
+                              {this.handleStarRating(v.rating)}
+                            </h5>
+                            <p>{v.review}</p>
+                          </Col>
+                          <Col md={2}>
+                            <Button
+                              variant="success"
+                              size="sm"
+                              onClick={this.handleShow}
+                            >
+                              {this.state.onLoadForm && (
+                                <Spinner class="text-center my-0" />
+                              )}
+                              {!this.state.onLoadForm && (
+                                <span id={v.id}>Edit</span>
+                              )}
+                            </Button>
+                          </Col>
+                        </Row>
                       </Media.Body>
-                      <Button
-                        variant="success"
-                        size="sm"
-                        onClick={this.handleShow}
-                      >
-                        {this.state.onLoadForm && (
-                          <Spinner class="text-center my-0" />
-                        )}
-                        {!this.state.onLoadForm && <span id={v.id}>Edit</span>}
-                      </Button>
 
                       <Modal
                         show={this.state.show}

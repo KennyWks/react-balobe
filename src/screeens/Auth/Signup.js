@@ -22,6 +22,13 @@ const signupFormSchema = Yup.object().shape({
   password: Yup.string()
     .required("Password is required!")
     .min(5, "Password must be 5 characters at minimum!"),
+  // .matches(
+  //   /^.*(?=.{8,})((?=.*[!@#$%^&*()\-_=+{};:,<.>]){1})(?=.*\d)((?=.*[a-z]){1})((?=.*[A-Z]){1}).*$/,
+  //   "Password must contain at least 8 characters, one uppercase, one number and one special case character"
+  // ),
+  confirmPassword: Yup.string()
+    .required("Please confirm your password")
+    .oneOf([Yup.ref("password"), null], "Passwords don't match."),
   fullname: Yup.string().required("Fullname is required!"),
   gender: Yup.string().required("Gender is required!"),
   address: Yup.string().required("Address is required!"),
@@ -101,6 +108,7 @@ class Signup extends Component {
     return {
       username: "",
       password: "",
+      confirmPassword: "",
       fullname: "",
       gender: "",
       address: "",
@@ -153,7 +161,7 @@ class Signup extends Component {
             >
               {(props) => (
                 <Form onSubmit={props.handleSubmit}>
-                  <FormBootstrap.Group controlId="username.ControlInput1">
+                  <FormBootstrap.Group controlId="username">
                     <Field
                       type="text"
                       name="username"
@@ -169,7 +177,7 @@ class Signup extends Component {
                       className="invalid-feedback"
                     />
                   </FormBootstrap.Group>
-                  <FormBootstrap.Group controlId="password.ControlInput2">
+                  <FormBootstrap.Group controlId="password">
                     <Field
                       type="password"
                       name="password"
@@ -185,7 +193,23 @@ class Signup extends Component {
                       className="invalid-feedback"
                     />
                   </FormBootstrap.Group>
-                  <FormBootstrap.Group controlId="fullname.ControlInput3">
+                  <FormBootstrap.Group controlId="confirmPassword">
+                    <Field
+                      type="password"
+                      name="confirmPassword"
+                      placeholder="Confirm Your Password"
+                      className={`form-control ${
+                        props.errors.confirmPassword ? `is-invalid` : ``
+                      }`}
+                      value={props.confirmPassword}
+                    />
+                    <ErrorMessage
+                      component="div"
+                      name="confirmPassword"
+                      className="invalid-feedback"
+                    />
+                  </FormBootstrap.Group>
+                  <FormBootstrap.Group controlId="fullname">
                     <Field
                       type="text"
                       name="fullname"
@@ -202,7 +226,7 @@ class Signup extends Component {
                     />
                   </FormBootstrap.Group>
 
-                  <FormBootstrap.Group controlId="gender.ControlInput4">
+                  <FormBootstrap.Group controlId="gender">
                     <Row>
                       <Col md>
                         <Row>
@@ -235,7 +259,7 @@ class Signup extends Component {
                     </Row>
                   </FormBootstrap.Group>
 
-                  <FormBootstrap.Group controlId="address.ControlTextarea5">
+                  <FormBootstrap.Group controlId="address">
                     <FormBootstrap.Label>Address</FormBootstrap.Label>
                     <Field
                       as="textarea"
@@ -252,7 +276,7 @@ class Signup extends Component {
                       className="invalid-feedback"
                     />
                   </FormBootstrap.Group>
-                  <FormBootstrap.Group controlId="email.ControlInput6">
+                  <FormBootstrap.Group controlId="email">
                     <Field
                       type="email"
                       name="email"
@@ -271,7 +295,7 @@ class Signup extends Component {
                       We'll never share your email with anyone else.
                     </FormBootstrap.Text>
                   </FormBootstrap.Group>
-                  <FormBootstrap.Group controlId="phone.ControlInput7">
+                  <FormBootstrap.Group controlId="phone">
                     <Field
                       type="text"
                       name="phone"

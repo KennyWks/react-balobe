@@ -15,8 +15,17 @@ import {
   BsFillShieldFill,
   BsStarFill,
 } from "react-icons/bs";
-import { Container, Row, Col, Form, Card, Media } from "react-bootstrap";
-import { getData, postData } from "../../helpers/CRUD";
+import {
+  Container,
+  Row,
+  Col,
+  Form,
+  Card,
+  Media,
+  Modal,
+  Button as ButtonBootstrap,
+} from "react-bootstrap";
+import { getData, postData, patchData } from "../../helpers/CRUD";
 
 class DetailProduct extends Component {
   constructor(props) {
@@ -43,14 +52,17 @@ class DetailProduct extends Component {
         courier: "",
       },
       resultCourier: [],
-      review: {},
+      review: [],
       formReview: {
+        id: "",
         id_user: props.isLogin ? props.id_user : "",
         id_item: parseInt(this.props.match.params.id),
+        id_pelapak: "",
         rating: 1,
         review: "-",
       },
       disabled: "false",
+      showModal: false,
     };
   }
 
@@ -72,6 +84,13 @@ class DetailProduct extends Component {
           ...prevState,
           detailProduct: responseItem.data.data,
           city: responseCity.data.data.rajaongkir.results,
+        }));
+        this.setState((prevState) => ({
+          ...prevState,
+          formReview: {
+            ...prevState.formReview,
+            id_pelapak: responseItem.data.data.id_pelapak,
+          },
         }));
         await this.handleSetOriginWeight();
       }
@@ -316,12 +335,13 @@ class DetailProduct extends Component {
     }));
   };
 
-  handleSubmitReview = async (e) => {
+  handleSubmitAddReview = async (e) => {
     e.preventDefault();
     this.setState((prevState) => ({
       ...prevState,
       onLoad: true,
     }));
+
     try {
       const response = await postData(`/item/review`, this.state.formReview);
       // console.log(response);
@@ -359,6 +379,56 @@ class DetailProduct extends Component {
       return v.city_id === `${city}`;
     });
     return dataCity[0].city_name;
+  };
+
+  handleSubmitUpdateReview = async (e) => {
+    e.preventDefault();
+    this.setState((prevState) => ({
+      ...prevState,
+      onSubmit: true,
+    }));
+    const { formReview } = this.state;
+    try {
+      const response = await patchData(
+        `/item/review/${formReview.id}`,
+        this.state.formReview
+      );
+      // console.log(response);
+      if (response.status === 200) {
+        this.setState((prevState) => ({
+          ...prevState,
+          formReview: {
+            ...prevState.formReview,
+            rating: 1,
+            review: "-",
+          },
+        }));
+        alert(`${response.data.data.msg}`);
+      }
+    } catch (error) {
+      if (!error.response) {
+        alert("Server error! please try again.");
+      } else {
+        if (error.response.status === 500) {
+          alert("Something error! please try again.");
+        } else {
+          this.setState((prevState) => ({
+            ...prevState,
+            message: error.response.data.error.msg,
+            alert: "danger",
+          }));
+        }
+      }
+    }
+    this.setState((prevState) => ({
+      ...prevState,
+      onSubmit: false,
+    }));
+    this.setState((prevState) => ({
+      ...prevState,
+      showModal: false,
+    }));
+    this.getDetailProduct();
   };
 
   render() {
@@ -558,22 +628,6 @@ class DetailProduct extends Component {
                             </Row>
 
                             <Form onSubmit={this.handleSubmitCarts}>
-                              <input
-                                type="hidden"
-                                name="id_item"
-                                value={detailProduct.id_item}
-                              />
-                              <input
-                                type="hidden"
-                                name="id_pelapak"
-                                value={detailProduct.id_pelapak}
-                              />
-                              <input
-                                type="hidden"
-                                name="price"
-                                value={detailProduct.price}
-                              />
-
                               <Row>
                                 <Col md={2}>
                                   <span>Order</span>
@@ -733,7 +787,7 @@ class DetailProduct extends Component {
                         {!this.state.onSubmit && (
                           <div>
                             <h3>Add Some Review</h3>
-                            <Form onSubmit={this.handleSubmitReview}>
+                            <Form onSubmit={this.handleSubmitAddReview}>
                               <Form.Group controlId="review">
                                 <Form.Control
                                   as="textarea"
@@ -751,7 +805,7 @@ class DetailProduct extends Component {
                               <Button
                                 variant="primary"
                                 type="submit"
-                                name="Send"
+                                name="Submit"
                                 className="send-btn"
                               />
                             </Form>
@@ -776,11 +830,55 @@ class DetailProduct extends Component {
                   <Row>
                     <Col>
                       <h3>Review</h3>
+
                       {!this.props.isLogin && (
                         <small>
                           Please login to say something about this item.
                         </small>
                       )}
+
+                      <Modal
+                        size="sm"
+                        show={this.state.showModal}
+                        onHide={() =>
+                          this.setState((prevState) => ({
+                            ...prevState,
+                            showModal: false,
+                          }))
+                        }
+                        aria-labelledby="example-modal-sizes-title-sm"
+                        animation={false}
+                      >
+                        <Modal.Header closeButton>
+                          <Modal.Title id="example-modal-sizes-title-sm">
+                            Update Review
+                          </Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                          <Form onSubmit={this.handleSubmitUpdateReview}>
+                            <Form.Group controlId="review">
+                              <Form.Control
+                                as="textarea"
+                                rows={3}
+                                name="review"
+                                onChange={this.handleInputReview}
+                              />
+                            </Form.Group>
+                            <ReactStars
+                              count={5}
+                              onChange={this.handleRatingChange}
+                              size={24}
+                              activeColor="#ffd700"
+                            />
+                            <Button
+                              variant="primary"
+                              type="submit"
+                              name="Submit"
+                              className="send-btn"
+                            />
+                          </Form>
+                        </Modal.Body>
+                      </Modal>
                     </Col>
                     <Col>
                       {review.length > 0 &&
@@ -814,7 +912,29 @@ class DetailProduct extends Component {
                                       className="card-text"
                                       style={{ textTransform: "capitalize" }}
                                     >
-                                      {v.review}
+                                      {v.review}{" "}
+                                      <span key={i}>
+                                        {v.id_user === this.props.id_user && (
+                                          <ButtonBootstrap
+                                            variant="link"
+                                            className="m-1"
+                                            id={v.id}
+                                            onClick={(e) => {
+                                              const id = e.target.id;
+                                              this.setState((prevState) => ({
+                                                ...prevState,
+                                                showModal: true,
+                                                formReview: {
+                                                  ...prevState.formReview,
+                                                  id: id,
+                                                },
+                                              }));
+                                            }}
+                                          >
+                                            Edit
+                                          </ButtonBootstrap>
+                                        )}
+                                      </span>
                                     </p>
                                   </Media.Body>
                                 </div>

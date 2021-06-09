@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { getData } from "../../helpers/CRUD";
+import { getData, postData } from "../../helpers/CRUD";
 import { Link } from "react-router-dom";
 import {
   Container,
@@ -56,6 +56,7 @@ class ChangePassword extends Component {
       const response = await getData(
         `/auth/confirmPass${this.props.location.search}`
       );
+      console.log(response);
       if (response.status === 200) {
         this.setState((prevState) => ({
           ...prevState,
@@ -93,12 +94,13 @@ class ChangePassword extends Component {
       alert: "",
     }));
     try {
-      const response = await getData(`/auth/updatePass/${params.id_user}`);
+      const response = await postData(`/auth/updatePass/${params.id_user}`, this.state.form);
+      console.log(response);
       if (response.status === 200) {
         this.setState((prevState) => ({
           ...prevState,
           message: response.data.data.msg,
-          alert: "succces",
+          alert: "success",
         }));
       }
     } catch (error) {
@@ -125,6 +127,7 @@ class ChangePassword extends Component {
   initialValues() {
     return {
       password: "",
+      confirmPassword: "",
     };
   }
 
@@ -161,14 +164,6 @@ class ChangePassword extends Component {
             )}
 
             {this.state.url !== "" && (
-              <div className="text-center">
-                <h6 className="my-3">
-                  Back to <Link to={`/signin`}>Login</Link>
-                </h6>
-              </div>
-            )}
-
-            {this.state.url !== "" && (
               <Formik
                 initialValues={this.initialValues()}
                 validationSchema={changePassFormSchema}
@@ -192,7 +187,7 @@ class ChangePassword extends Component {
                   <Form onSubmit={props.handleSubmit}>
                     <FormBootstrap.Group controlId="password">
                       <Field
-                        type="text"
+                        type="password"
                         name="password"
                         placeholder="Your new password"
                         className={`form-control ${
@@ -208,7 +203,7 @@ class ChangePassword extends Component {
                     </FormBootstrap.Group>
                     <FormBootstrap.Group controlId="confirmPassword">
                       <Field
-                        type="text"
+                        type="password"
                         name="confirmPassword"
                         placeholder="Confirm your new password"
                         className={`form-control ${
@@ -235,6 +230,12 @@ class ChangePassword extends Component {
                 )}
               </Formik>
             )}
+
+            <div className="text-center">
+              <h6 className="my-3">
+                Back to <Link to={`/signin`}>Login</Link>
+              </h6>
+            </div>
           </Col>
           <Col md={3}></Col>
         </Row>
