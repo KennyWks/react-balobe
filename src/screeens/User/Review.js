@@ -9,6 +9,7 @@ import {
   Button,
   Modal,
   Form,
+  Pagination,
 } from "react-bootstrap";
 import { BsStarFill } from "react-icons/bs";
 import ReactStars from "react-rating-stars-component";
@@ -25,12 +26,13 @@ class Review extends Component {
         data: [],
         metadata: {},
       },
+      page: 1,
       onLoad: false,
       show: false,
       onLoadForm: false,
       message: "",
       alert: "",
-      onSubmit: "",
+      onSubmit: false,
       form: {
         id: "",
         review: "-",
@@ -41,17 +43,17 @@ class Review extends Component {
 
   componentDidMount() {
     document.title = `My Review - Balobe`;
-    this.getReview();
+    this.getReview(this.props.location.search);
   }
 
-  getReview = async () => {
+  getReview = async (url) => {
     this.setState((prevState) => ({
       ...prevState,
       onLoad: true,
     }));
     try {
-      const response = await getData(`/item/review/user`);
-      console.log(response);
+      const response = await getData(`/item/review/user${url ? url : ""}`);
+      // console.log(response);
       this.setState((prevState) => ({
         ...prevState,
         dataReview: response.data,
@@ -193,8 +195,64 @@ class Review extends Component {
     }));
   };
 
+  handleFirstPage = () => {
+    this.setState((prevState) => ({
+      ...prevState,
+      page: 1,
+    }));
+    this.getReview(`?page=1&limit=5`);
+  };
+
+  handleLastPage = () => {
+    const { totalPage } = this.state.dataReview.metadata.pagination;
+    this.setState((prevState) => ({
+      ...prevState,
+      page: totalPage,
+    }));
+    this.getReview(`?page=${totalPage}&limit=5`);
+  };
+
+  handlePrev = () => {
+    const counter = this.state.page <= 1 ? 1 : this.state.page - 1;
+    this.setState((prevState) => ({
+      ...prevState,
+      page: counter,
+    }));
+    this.getReview(`?page=${counter}&limit=5`);
+  };
+
+  handleNext = () => {
+    const { totalPage } = this.state.dataReview.metadata.pagination;
+    const counter =
+      this.state.page === totalPage ? totalPage : this.state.page + 1;
+
+    this.setState((prevState) => ({
+      ...prevState,
+      page: counter,
+    }));
+    this.getReview(`?page=${counter}&limit=5`);
+  };
+
+  handleEllipsis = () => {
+    const { currentPage } = this.state.dataReview.metadata.pagination;
+    const counter = Math.floor(currentPage / 5);
+    this.setState((prevState) => ({
+      ...prevState,
+      page: counter,
+    }));
+    this.getReview(`?page=${counter}&limit=5`);
+  };
+
+  paginationItem = () => {
+    let pagination = [];
+    for (let i = 1; i <= 5; i++) {
+      pagination.push(<Pagination.Item>{i}</Pagination.Item>);
+    }
+    return pagination;
+  };
+
   render() {
-    const { dataReview } = this.state;
+    const { data, metadata } = this.state.dataReview;
     const url =
       process.env.REACT_APP_ENVIROMENT === "production"
         ? process.env.REACT_APP_URL_IMAGES_PRODUCTION
@@ -226,13 +284,13 @@ class Review extends Component {
                 />
               )}
 
-              {!this.state.onLoad && !dataReview.data.length > 0 && (
+              {!this.state.onLoad && !data.length > 0 && (
                 <p style={{ textAlign: "center" }}>Review's is empty</p>
               )}
 
               {!this.state.onLoad &&
-                dataReview.data.length > 0 &&
-                dataReview.data.map((v, i) => (
+                data.length > 0 &&
+                data.map((v, i) => (
                   <ul className="list-unstyled" key={i}>
                     <Media as="li">
                       <img
@@ -321,6 +379,47 @@ class Review extends Component {
             </Card.Body>
           </Col>
         </Row>
+
+        {Object.keys(metadata).length > 0 && (
+          <Row className="justify-content-center mt-3">
+            <Pagination>
+              {metadata.pagination.prevPage && (
+                <>
+                  <Pagination.First onClick={this.handleFirstPage} />
+                  <Pagination.Prev onClick={this.handlePrev} />
+                </>
+              )}
+
+              {metadata.pagination.currentPage - 1 >= 5 && (
+                <>
+                  <Pagination.Ellipsis onClick={this.handleEllipsis} />
+                </>
+              )}
+
+              <Pagination.Item active>
+                {metadata.pagination.currentPage}
+              </Pagination.Item>
+
+              {metadata.pagination.totalPage - metadata.pagination.currentPage >
+                5 && <>{this.paginationItem}</>}
+
+              {metadata.pagination.totalPage -
+                metadata.pagination.currentPage >=
+                5 && (
+                <>
+                  <Pagination.Ellipsis onClick={this.handleEllipsis} />
+                </>
+              )}
+
+              {metadata.pagination.nextPage && (
+                <>
+                  <Pagination.Next onClick={this.handleNext} />
+                  <Pagination.Last onClick={this.handleLastPage} />
+                </>
+              )}
+            </Pagination>
+          </Row>
+        )}
       </Container>
     );
   }

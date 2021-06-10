@@ -57,6 +57,14 @@ class Home extends Component {
     }));
   };
 
+  handleStarRating = (rating) => {
+    let star = [];
+    for (let i = 0; i < rating; i++) {
+      star.push(<BsStarFill key={i} />);
+    }
+    return star;
+  };
+
   handleFirstPage = () => {
     this.setState((prevState) => ({
       ...prevState,
@@ -103,14 +111,6 @@ class Home extends Component {
       page: counter,
     }));
     this.getProduct(`?page=${counter}&limit=8`);
-  };
-
-  handleStarRating = (rating) => {
-    let handleStarRating = [];
-    for (let i = 0; i < rating; i++) {
-      handleStarRating.push(<BsStarFill key={i} />);
-    }
-    return handleStarRating;
   };
 
   paginationItem = () => {
