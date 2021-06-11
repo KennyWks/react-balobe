@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Card, Media } from "react-bootstrap";
+import { Container, Row, Col, Card, Media, Pagination } from "react-bootstrap";
 import Spinner from "../../component/Spinner";
 import { getData } from "../../helpers/CRUD";
 
-const BuyTransaction = () => {
+const BuyTransaction = (props) => {
   const [data, setData] = useState([]);
+  const [page, setPage] = useState(1);
+  const [metadata, setMetadata] = useState({});
   const [onLoad, setLoad] = useState(false);
 
-  const getTransaction = async () => {
+  const getTransaction = async (url) => {
     setLoad(true);
     try {
-      const response = await getData(`/transaction/buy`);
+      const response = await getData(`/transaction/buy${url ? url : ""}`);
       if (response.status === 200) {
         setData(response.data.data);
+        setMetadata(response.data.metadata);
       }
     } catch (error) {
       if (!error.response) {
@@ -28,8 +31,47 @@ const BuyTransaction = () => {
 
   useEffect(() => {
     document.title = `Your Transaction (Buy) - Balobe`;
-    getTransaction();
+    getTransaction(props.location.search);
   }, []);
+
+  const handleFirstPage = () => {
+    setPage(1);
+    getTransaction(`?page=1&limit=5`);
+  };
+
+  const handleLastPage = () => {
+    const { totalPage } = metadata.pagination;
+    setPage(totalPage);
+    getTransaction(`?page=${totalPage}&limit=5`);
+  };
+
+  const handlePrev = () => {
+    const counter = page <= 1 ? 1 : page - 1;
+    setPage(counter);
+    getTransaction(`?page=${counter}&limit=5`);
+  };
+
+  const handleNext = () => {
+    const { totalPage } = metadata.pagination;
+    const counter = page === totalPage ? totalPage : page + 1;
+    setPage(counter);
+    getTransaction(`?page=${counter}&limit=5`);
+  };
+
+  const handleEllipsis = () => {
+    const { currentPage } = metadata.pagination;
+    const counter = Math.floor(currentPage / 5);
+    setPage(counter);
+    getTransaction(`?page=${counter}&limit=5`);
+  };
+
+  const paginationItem = () => {
+    let pagination = [];
+    for (let i = 1; i <= 5; i++) {
+      pagination.push(<Pagination.Item>{i}</Pagination.Item>);
+    }
+    return pagination;
+  };
 
   const url =
     process.env.REACT_APP_ENVIROMENT === "production"
@@ -45,6 +87,10 @@ const BuyTransaction = () => {
               <div className="text-center my-2">
                 <Spinner class="text-center my-3" />
               </div>
+            )}
+
+            {!onLoad && !data.length > 0 && (
+              <div className="text-center">Data transaction is empty.</div>
             )}
 
             {!onLoad &&
@@ -89,6 +135,76 @@ const BuyTransaction = () => {
           </Card.Body>
         </Col>
       </Row>
+
+      {Object.keys(metadata).length > 0 && (
+        <Row className="justify-content-center mt-3">
+          <Pagination>
+            {metadata.pagination.prevPage && (
+              <>
+                <Pagination.First
+                  onClick={() => {
+                    handleFirstPage();
+                  }}
+                />
+                <Pagination.Prev
+                  onClick={() => {
+                    handlePrev();
+                  }}
+                />
+              </>
+            )}
+
+            {metadata.pagination.currentPage - 1 >= 5 && (
+              <>
+                <Pagination.Ellipsis
+                  onClick={() => {
+                    handleEllipsis();
+                  }}
+                />
+              </>
+            )}
+
+            <Pagination.Item active>
+              {metadata.pagination.currentPage}
+            </Pagination.Item>
+
+            {metadata.pagination.totalPage - metadata.pagination.currentPage >
+              5 && (
+              <>
+                {() => {
+                  paginationItem();
+                }}
+              </>
+            )}
+
+            {metadata.pagination.totalPage - metadata.pagination.currentPage >=
+              5 && (
+              <>
+                <Pagination.Ellipsis
+                  onClick={() => {
+                    handleEllipsis();
+                  }}
+                />
+              </>
+            )}
+
+            {metadata.pagination.nextPage && (
+              <>
+                <Pagination.Next
+                  onClick={() => {
+                    handleNext();
+                  }}
+                />
+                <Pagination.Last
+                  onClick={() => {
+                    handleLastPage();
+                  }}
+                />
+              </>
+            )}
+          </Pagination>
+        </Row>
+      )}
     </Container>
   );
 };
