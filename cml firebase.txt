@@ -1,0 +1,15 @@
+npm install firebase-tools -g
+
+firebase login
+
+firebase init
+
+build
+
+Y
+
+github integration (n)
+
+npm run build
+
+firebase deploy

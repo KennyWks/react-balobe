@@ -1,8 +1,6 @@
 import axios from "axios";
 import { Cookies } from "react-cookie";
 
-// const ApiURL = "http://localhost:5000"; -> URL API FOR DEVELOPMENT
-// const ApiURL = "https://balobe.herokuapp.com"; -> URL API FOR PRODUCTON
 const ApiURL =
   process.env.REACT_APP_ENVIROMENT === "production"
     ? process.env.REACT_APP_BASE_URL_PRODUCTION
