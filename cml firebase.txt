@@ -13,3 +13,10 @@ github integration (n)
 npm run build
 
 firebase deploy
+
+ENV Config
+REACT_APP_ENVIROMENT=production
+REACT_APP_BASE_URL_DEVELOPMENT=http://localhost:5000
+REACT_APP_BASE_URL_PRODUCTION=https://nodejs-balobe.vercel.app
+REACT_APP_URL_IMAGES_DEVELOPMENT=http://localhost:5000
+REACT_APP_URL_IMAGES_PRODUCTION=https://firebasestorage.googleapis.com/v0/b/balobe-d2a28.appspot.com/o
