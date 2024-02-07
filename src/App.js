@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
 import Home from "./screeens/Home/Home";
 import DetailItem from "./screeens/Product/DetailProduct";
+import DetailArticle from "./screeens/Article/DetailArticle";
 import Signin from "./screeens/Auth/Signin";
 import Signup from "./screeens/Auth/Signup";
 import ConfirmRegister from "./screeens/Auth/ConfirmRegister";
@@ -29,6 +30,7 @@ class App extends Component {
         <Switch>
           <Route exact path="/" component={Home} />
           <Route exact path="/item/:id" component={DetailItem} />
+          <Route exact path="/article/:id" component={DetailArticle} />
           <Route exact path="/signin" component={Signin} />
           <Route exact path="/admin" component={Admin} />
           <Route exact path="/admin/pelapak" component={AdminPelapak} />

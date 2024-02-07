@@ -194,7 +194,7 @@ class Carts extends Component {
       onLoad: true,
     }));
     try {
-      const responseTransaction = await postData(
+      await postData(
         `/transaction`,
         this.state.cartsChecked
       );
